@@ -14,7 +14,7 @@
             <iyz>0</iyz>
             <izz>0.01</izz>
           </inertia>
-          <mass>0.1</mass>
+          <mass>0.3</mass>
         </inertial>
 
         <collision name="my_collision">
