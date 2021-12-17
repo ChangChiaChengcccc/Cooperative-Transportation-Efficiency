@@ -16,6 +16,47 @@ PayloadPositionController::PayloadPositionController()
 
 PayloadPositionController::~PayloadPositionController() {}
 
+void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* error, nav_msgs::Odometry* payload_control_input)
+{
+	
+	// compute b_3_d and the acceleration
+	Eigen::Vector3d force_control_input;
+	ComputeDesiredForce(&force_control_input);
+
+	// compute angular acceleration and moment control input
+	Eigen::Vector3d moment_control_input;
+	ComputeDesiredMoment(force_control_input, &moment_control_input);
+
+	error->pose.pose.position.x = position_error(0);
+	error->pose.pose.position.y = position_error(1);
+	error->pose.pose.position.z = position_error(2);
+	error->pose.pose.orientation.x = angle_error(0);
+	error->pose.pose.orientation.y = angle_error(1);
+	error->pose.pose.orientation.z = angle_error(2);
+	error->pose.pose.orientation.w = Psi;
+	error->twist.twist.linear.x = velocity_error(0);
+	error->twist.twist.linear.y = velocity_error(1);
+	error->twist.twist.linear.z = velocity_error(2);
+	error->twist.twist.angular.x = angular_rate_error(0);
+	error->twist.twist.angular.y = angular_rate_error(1);
+	error->twist.twist.angular.z = angular_rate_error(2);
+
+	// comput thrust control input and project thrust onto body z axis.
+	double thrust = -force_control_input.dot(odometry_.orientation.toRotationMatrix().col(2));
+
+	// this block use moment control input to compute the rotor velocities of every rotor
+	// [4, 1] vector for moment and thrust
+	Eigen::Vector4d moment_thrust;
+	moment_thrust.block<3, 1>(0, 0) = moment_control_input;
+	moment_thrust(3) = thrust;	
+
+	// for publish payload_control_input
+	payload_control_input->pose.pose.orientation.x = moment_thrust(0);
+	payload_control_input->pose.pose.orientation.y = moment_thrust(1);
+	payload_control_input->pose.pose.orientation.z = moment_thrust(2);
+	payload_control_input->pose.pose.orientation.w = moment_thrust(3);
+}
+
 
 void PayloadPositionController::SetOdometry(const EigenOdometry& odometry)
 {

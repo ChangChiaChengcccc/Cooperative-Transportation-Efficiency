@@ -26,11 +26,13 @@ public:
 	PayloadPositionControllerNode( const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
 	~PayloadPositionControllerNode();
 
+	void InitializeParams();
+
 private:
 	ros::NodeHandle nh_;
 	ros::NodeHandle private_nh_;
 
-	PayloadPositionController Payload_position_controller_;
+	PayloadPositionController payload_position_controller_;
 
 	std::string namespace_;
 
@@ -46,6 +48,7 @@ private:
 	ros::Publisher attitude_error_pub_;
 	ros::Publisher omega_error_pub_;
 	ros::Publisher error_pub_;
+	ros::Publisher payload_control_input_pub_;
 
 	mav_msgs::EigenTrajectoryPointDeque commands_;
 	std::deque<ros::Duration> command_waiting_times_;

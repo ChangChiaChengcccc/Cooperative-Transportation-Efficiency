@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/ncrl/research_ws/devel/include/**",
+        "/home/ncrl/chengcheng_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/gazebo_ros_link_attacher/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/gps/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/path_planner/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/mav_comm/mav_msgs/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/mav_comm/mav_planning_msgs/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/offb/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/plotmap/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/plottest/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/rotors_simulator/rotors_control/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/rotors_simulator/rotors_gazebo_plugins/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/rotors_simulator/rotors_hil_interface/include/**",
+        "/home/ncrl/research_ws/src/Cooperative-Transportation-Efficiency/rotors_simulator/rotors_joy_interface/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <chrono>
 #include "rotors_control/common.h"
-#include "rotors_control/parameters.h"
+#include "rotors_control/parameters_payload.h"
 
 namespace rotors_control
 {
@@ -47,6 +47,7 @@ class PayloadPositionController
 public:
 	PayloadPositionController();
 	~PayloadPositionController();
+	void CalculateControlInput(nav_msgs::Odometry* error, nav_msgs::Odometry* payload_control_input);
 	void SetOdometry(const EigenOdometry& odometry);
 	void SetTrajectoryPoint(const mav_msgs::EigenTrajectoryPoint& command_trajectory);
 
