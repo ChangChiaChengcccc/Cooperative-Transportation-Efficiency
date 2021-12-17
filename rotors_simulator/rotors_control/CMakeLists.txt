@@ -35,6 +35,9 @@ add_library(roll_pitch_yawrate_thrust_controller
   src/library/roll_pitch_yawrate_thrust_controller.cpp
 )
 
+add_library(payload_position_controller
+  src/library/payload_position_controller.cpp
+)
 
 
 
@@ -43,6 +46,9 @@ add_dependencies(lee_position_controller ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(roll_pitch_yawrate_thrust_controller ${catkin_LIBRARIES})
 add_dependencies(roll_pitch_yawrate_thrust_controller ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(payload_position_controller ${catkin_LIBRARIES})
+add_dependencies(payload_position_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(lee_position_controller_node src/nodes/lee_position_controller_node.cpp)
 add_dependencies(lee_position_controller_node ${catkin_EXPORTED_TARGETS})
@@ -54,15 +60,21 @@ add_executable(roll_pitch_yawrate_thrust_controller_node
 add_dependencies(roll_pitch_yawrate_thrust_controller_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(roll_pitch_yawrate_thrust_controller_node
   roll_pitch_yawrate_thrust_controller ${catkin_LIBRARIES})
+  
+add_executable(payload_position_controller_node src/nodes/payload_position_controller_node.cpp)
+add_dependencies(payload_position_controller_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(payload_position_controller_node
+  payload_position_controller ${catkin_LIBRARIES})
+
 
 #add_executable(force_controller_node src/nodes/force_controller.cpp)
 #target_link_libraries(force_controller_node ${catkin_LIBRARIES})
 
-install(TARGETS lee_position_controller roll_pitch_yawrate_thrust_controller
+install(TARGETS lee_position_controller roll_pitch_yawrate_thrust_controller payload_position_controller
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(TARGETS lee_position_controller_node roll_pitch_yawrate_thrust_controller_node
+install(TARGETS lee_position_controller_node roll_pitch_yawrate_thrust_controller_node payload_position_controller_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
