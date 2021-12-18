@@ -4,5 +4,11 @@
         "/home/ncrl/chengcheng_ws/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages",
         "/home/ncrl/Desktop/YOLO"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ncrl/research_ws/devel/lib/python2.7/dist-packages",
+        "/home/ncrl/chengcheng_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages",
+        "/home/ncrl/Desktop/YOLO"
     ]
 }

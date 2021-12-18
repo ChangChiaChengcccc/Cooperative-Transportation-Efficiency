@@ -79,6 +79,7 @@ public:
 	Eigen::Vector3d   velocity_error;
 	Eigen::Vector3d   angular_rate_error;
 	Eigen::Vector3d   angle_error;
+	//Eigen::Matrix3d   angular_velocity_hat;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

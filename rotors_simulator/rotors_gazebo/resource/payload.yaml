@@ -1,0 +1,6 @@
+# Iris vehicle parameters
+mass: 0.3
+inertia: {xx: 0.00001, xy: 0.0, xz: 0.0, yy: 0.00001, yz: 0.0, zz: 0.00001}
+
+
+

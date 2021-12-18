@@ -50,9 +50,15 @@ add_dependencies(roll_pitch_yawrate_thrust_controller ${catkin_EXPORTED_TARGETS}
 target_link_libraries(payload_position_controller ${catkin_LIBRARIES})
 add_dependencies(payload_position_controller ${catkin_EXPORTED_TARGETS})
 
+
 add_executable(lee_position_controller_node src/nodes/lee_position_controller_node.cpp)
 add_dependencies(lee_position_controller_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(lee_position_controller_node
+  lee_position_controller ${catkin_LIBRARIES})
+  
+add_executable(lee_position_controller_node2 src/nodes/lee_position_controller_node2.cpp)
+add_dependencies(lee_position_controller_node2 ${catkin_EXPORTED_TARGETS})
+target_link_libraries(lee_position_controller_node2
   lee_position_controller ${catkin_LIBRARIES})
 
 add_executable(roll_pitch_yawrate_thrust_controller_node
