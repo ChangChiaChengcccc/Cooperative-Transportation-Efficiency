@@ -141,12 +141,12 @@ void LeePositionController::ComputeDesiredMoment(const Eigen::Vector3d& force_co
 	// Get the desired rotation matrix.
 	// b_1_d is the time derivative of desired trajectory
 	Eigen::Vector3d b1_des;
-	double yaw = atan2(  command_trajectory_.velocity_W(1),command_trajectory_.velocity_W(0) );
-	if(yaw <0 ) {
-		yaw+=6.28;
-	}
+	//double yaw = atan2(  command_trajectory_.velocity_W(1),command_trajectory_.velocity_W(0) );
+	//if(yaw <0 ) {
+	//	yaw+=6.28;
+	//}
 
-	/*double yaw = command_trajectory_.getYaw();*/
+	double yaw = command_trajectory_.getYaw();
 	b1_des << cos(yaw), sin(yaw), 0;
 
 	// b_3_d is calculated in ComputeDesiredForce()
@@ -171,7 +171,7 @@ void LeePositionController::ComputeDesiredMoment(const Eigen::Vector3d& force_co
 
 	// TODO(burrimi) include angular rate references at some point.
 	Eigen::Vector3d angular_rate_des(Eigen::Vector3d::Zero());
-	angular_rate_des[2] = command_trajectory_.getYawRate();
+	angular_rate_des[2] = 0;//command_trajectory_.getYawRate();
 	angular_rate_error = odometry_.angular_velocity - R.transpose() * R_des * angular_rate_des;
 
 	// Psi
@@ -187,12 +187,12 @@ void LeePositionController::ComputeDesiredMoment(const Eigen::Vector3d& force_co
 
 	*moment_control_input = - angle_error.cwiseProduct(controller_parameters_.attitude_gain_)
 	                        - angular_rate_error.cwiseProduct(controller_parameters_.angular_rate_gain_)
-	                        + odometry_.angular_velocity.cross(vehicle_parameters_.inertia_*odometry_.angular_velocity)
-							- vehicle_parameters_.inertia_*(angular_velocity_hat*R.transpose()*R_des*angular_rate_des
-							  -R.transpose()*R_des*angular_acc_des);
+	                        + odometry_.angular_velocity.cross(vehicle_parameters_.inertia_*odometry_.angular_velocity);
+	//						- vehicle_parameters_.inertia_*(angular_velocity_hat*R.transpose()*R_des*angular_rate_des
+	//						  -R.transpose()*R_des*angular_acc_des);
 	
-	std::cout << "inertia\n" << vehicle_parameters_.inertia_ << std::endl;
-	std::cout << "first term\n" << angular_velocity_hat*R.transpose()*R_des*angular_rate_des << std::endl;
-	std::cout << "Second term\n" << R.transpose()*R_des*angular_acc_des << std::endl;
+	//std::cout << "inertia\n" << vehicle_parameters_.inertia_ << std::endl;
+	//std::cout << "first term\n" << angular_velocity_hat*R.transpose()*R_des*angular_rate_des << std::endl;
+	//std::cout << "Second term\n" << R.transpose()*R_des*angular_acc_des << std::endl;
 }
 }

@@ -58,42 +58,42 @@ int main(int argc, char **argv)
 	std::vector<trajectory_profile> data;
 	double sample = 0.003;
 
-	p1.pos << 1.2, 0, 1.3;
+	p1.pos<< 0.6, 0, 1.3;
 	p1.vel<< 0, 0, 0;
 	p1.acc<< 0, 0, 0;
 	p1.yaw = 0;
 
-	p2.pos<< 4, 4, 1.3;
+	p2.pos<< 1.5, 1.5, 1.3;
 	p2.vel<< 0, 0, 0;
 	p2.acc<< 0, 0, 0;
 	p2.yaw = 0;
 
-	p3.pos<< -4, 4, 1.3;
+	p3.pos<< -1.5, 1.5, 1.3;
 	p3.vel<< 0, 0, 0;
 	p3.acc<< 0, 0, 0;
 	p3.yaw = 0;
 
-	p4.pos << -4, -4, 1.3;
+	p4.pos << -1.5, -1.5, 1.3;
 	p4.vel << 0, 0, 0;
 	p4.acc << 0, 0, 0;
 	p4.yaw = 0;
 
-	p5.pos << 4, -4, 1.3;
+	p5.pos << 1.5, -1.5, 1.3;
 	p5.vel << 0, 0, 0;
 	p5.acc << 0, 0, 0;
 	p5.yaw = 0;
 
-	p6.pos<< 4, 4, 1.3;
+	p6.pos<< 1.5, 1.5, 1.3;
 	p6.vel<< 0, 0, 0;
 	p6.acc<< 0, 0, 0;
 	p6.yaw = 0;
 
-	p7.pos << -4, 4, 1.3;
+	p7.pos << -1.5, 1.5, 1.3;
 	p7.vel << 0, 0, 0;
 	p7.acc << 0, 0, 0;
 	p7.yaw = 0;
 
-	p8.pos << 0, 0, 1.3;
+	p8.pos << 0.6, 0, 1.3;
 	p8.vel << 0, 0, 0;
 	p8.acc << 0, 0, 0;
 	p8.yaw = 0;
@@ -103,16 +103,16 @@ int main(int argc, char **argv)
 	p9.acc << 0, 0, 0;
 	p9.yaw = 0;
 
-	path.push_back(segments(p1, p2, 3));
-	path.push_back(segments(p2, p3, 2));
-	path.push_back(segments(p3, p4, 2));
-	path.push_back(segments(p4, p5, 2));
-	path.push_back(segments(p5, p6, 2));
-	path.push_back(segments(p6, p7, 2));
-	path.push_back(segments(p7, p8, 3));
+	path.push_back(segments(p1, p2, 1.5));
+	path.push_back(segments(p2, p3, 1));
+	path.push_back(segments(p3, p4, 1));
+	path.push_back(segments(p4, p5, 1));
+	path.push_back(segments(p5, p6, 1));
+	path.push_back(segments(p6, p7, 1));
+	path.push_back(segments(p7, p8, 1.5));
 	data = plan.get_profile(path, path.size(), sample);
 
-	desired_pose.pose.position.x = 1.2;
+	desired_pose.pose.position.x = 0.6;
 	desired_pose.pose.position.y = 0.0;
 	desired_pose.pose.position.z = 1.3;
 
@@ -135,6 +135,10 @@ int main(int argc, char **argv)
 	traj.transforms.push_back(transform);
 	traj.velocities.push_back(twist);
 	traj.accelerations.push_back(twist);
+
+	traj2.transforms.push_back(transform);
+	traj2.velocities.push_back(twist);
+	traj2.accelerations.push_back(twist);
 
 	while(ros::ok()) {
 
@@ -189,6 +193,10 @@ int main(int argc, char **argv)
 		traj.accelerations[0].linear.x = ax;
 		traj.accelerations[0].linear.y = ay;
 		traj.accelerations[0].linear.z = az;
+		traj.transforms[0].rotation.w = 0;
+		traj.transforms[0].rotation.x = 0;
+		traj.transforms[0].rotation.y = 0;
+		traj.transforms[0].rotation.z = 0;
 
 		traj2.transforms[0].translation.x = vir_x-1.2;
 		traj2.transforms[0].translation.y = vir_y;
@@ -199,6 +207,10 @@ int main(int argc, char **argv)
 		traj2.accelerations[0].linear.x = ax;
 		traj2.accelerations[0].linear.y = ay;
 		traj2.accelerations[0].linear.z = az;
+		traj2.transforms[0].rotation.w = 0;
+		traj2.transforms[0].rotation.x = 0;
+		traj2.transforms[0].rotation.y = 0;
+		traj2.transforms[0].rotation.z = 0;
 
 		traj_pub.publish(traj);
 		traj_pub2.publish(traj2);
