@@ -47,7 +47,7 @@ class PayloadPositionController
 public:
 	PayloadPositionController();
 	~PayloadPositionController();
-	void CalculateControlInput(nav_msgs::Odometry* error, nav_msgs::Odometry* payload_control_input);
+	void CalculateControlInput(nav_msgs::Odometry* payload_control_input,nav_msgs::Odometry* error);
 	void SetOdometry(const EigenOdometry& odometry);
 	void SetTrajectoryPoint(const mav_msgs::EigenTrajectoryPoint& command_trajectory);
 

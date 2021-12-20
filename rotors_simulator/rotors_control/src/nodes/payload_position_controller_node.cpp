@@ -164,7 +164,7 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
 	nav_msgs::Odometry error;
 	nav_msgs::Odometry payload_control_input;
-	payload_position_controller_.CalculateControlInput(&error, &payload_control_input);
+	payload_position_controller_.CalculateControlInput(&payload_control_input,&error);
 
 	error_pub_.publish(error);
 	payload_control_input_pub_.publish(payload_control_input);

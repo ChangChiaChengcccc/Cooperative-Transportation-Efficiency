@@ -16,7 +16,7 @@ PayloadPositionController::PayloadPositionController()
 
 PayloadPositionController::~PayloadPositionController() {}
 
-void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* error, nav_msgs::Odometry* payload_control_input)
+void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* payload_control_input, nav_msgs::Odometry* error)
 {
 	
 	// compute b_3_d and the acceleration
