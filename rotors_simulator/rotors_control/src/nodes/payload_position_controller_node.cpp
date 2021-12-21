@@ -14,14 +14,14 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 {
 
 	cmd_sub_ = nh_.subscribe(
-	                   "/firefly1/desired_trajectory", 1,
+	                   "/payload/desired_trajectory", 1,
 	                   &PayloadPositionControllerNode::CommandCallback, this);
 
 	cmd_multi_dof_joint_trajectory_sub_ = nh_.subscribe(
 	                mav_msgs::default_topics::COMMAND_TRAJECTORY, 1,
 	                &PayloadPositionControllerNode::MultiDofJointTrajectoryCallback, this);
 
-	odometry_sub_ = nh_.subscribe(mav_msgs::default_topics::ODOMETRY, 1,
+	odometry_sub_ = nh_.subscribe("/payload/position", 1,
 	                              &PayloadPositionControllerNode::OdometryCallback, this);
 
 	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/error", 1);

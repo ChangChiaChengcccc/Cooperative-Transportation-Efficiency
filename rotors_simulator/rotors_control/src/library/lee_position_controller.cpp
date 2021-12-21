@@ -66,6 +66,7 @@ void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
 	Eigen::Vector3d moment_control_input;
 	ComputeDesiredMoment(force_control_input, &moment_control_input);
 
+	// position_error is computed in ComputeDesiredForce
 	error->pose.pose.position.x = position_error(0);
 	error->pose.pose.position.y = position_error(1);
 	error->pose.pose.position.z = position_error(2);

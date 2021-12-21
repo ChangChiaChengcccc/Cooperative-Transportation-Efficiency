@@ -4,6 +4,12 @@
 #include <cstdlib>
 #include <chrono>
 
+
+static double iris_mass = 1.55; //kg
+static double payload_mass = 0.3; //kg
+static double system_mass = 2*iris_mass + payload_mass; //kg
+static double gravity = 9.81;
+
 namespace rotors_control
 {
 
@@ -88,8 +94,8 @@ void PayloadPositionController::ComputeDesiredForce(Eigen::Vector3d* force_contr
 	//connect the desired force with the acceleration command
 	*force_control_input = (position_error.cwiseProduct(controller_parameters_.position_gain_)
 	                        + velocity_error.cwiseProduct(controller_parameters_.velocity_gain_))
-	                       - vehicle_parameters_.mass_ * vehicle_parameters_.gravity_ * e_3
-	                       - vehicle_parameters_.mass_ * command_trajectory_.acceleration_W;
+	                       - system_mass * gravity * e_3
+	                       - system_mass * command_trajectory_.acceleration_W;
 }
 
 // Implementation from the T. Payload et al. paper
@@ -105,12 +111,12 @@ void PayloadPositionController::ComputeDesiredMoment(const Eigen::Vector3d& forc
 	// Get the desired rotation matrix.
 	// b_1_d is the time derivative of desired trajectory
 	Eigen::Vector3d b1_des;
-	double yaw = atan2(  command_trajectory_.velocity_W(1),command_trajectory_.velocity_W(0) );
+	/*double yaw = atan2(  command_trajectory_.velocity_W(1),command_trajectory_.velocity_W(0) );
 	if(yaw <0 ) {
 		yaw+=6.28;
-	}
+	}*/
 
-	/*double yaw = command_trajectory_.getYaw();*/
+	double yaw = command_trajectory_.getYaw();
 	b1_des << cos(yaw), sin(yaw), 0;
 
 	// b_3_d is calculated in ComputeDesiredForce()

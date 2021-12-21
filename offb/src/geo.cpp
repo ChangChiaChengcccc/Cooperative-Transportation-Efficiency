@@ -46,10 +46,11 @@ int main(int argc, char **argv)
 
 	ros::Publisher  traj_pub = nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/firefly1/desired_trajectory", 1);
 	ros::Publisher  traj_pub2= nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/firefly2/desired_trajectory", 1);
+	ros::Publisher  traj_pub3= nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/payload/desired_trajectory", 1);	
 	double dt = 50.0;
 	ros::Rate loop_rate(dt);
 	nh.setParam("/start",true);
-	trajectory_msgs::MultiDOFJointTrajectoryPoint traj,traj2;
+	trajectory_msgs::MultiDOFJointTrajectoryPoint traj,traj2,traj3;
 
 	//planning
 	qptrajectory plan;
@@ -139,6 +140,10 @@ int main(int argc, char **argv)
 	traj2.transforms.push_back(transform);
 	traj2.velocities.push_back(twist);
 	traj2.accelerations.push_back(twist);
+	
+	traj3.transforms.push_back(transform);
+	traj3.velocities.push_back(twist);
+	traj3.accelerations.push_back(twist);
 
 	while(ros::ok()) {
 
@@ -211,10 +216,25 @@ int main(int argc, char **argv)
 		traj2.transforms[0].rotation.x = 0;
 		traj2.transforms[0].rotation.y = 0;
 		traj2.transforms[0].rotation.z = 0;
+		
+		traj2.transforms[0].translation.x = vir_x-0.6;
+		traj2.transforms[0].translation.y = vir_y;
+		traj2.transforms[0].translation.z = vir_z;
+		traj2.velocities[0].linear.x = vx;
+		traj2.velocities[0].linear.y = vy;
+		traj2.velocities[0].linear.z = vz;
+		traj2.accelerations[0].linear.x = ax;
+		traj2.accelerations[0].linear.y = ay;
+		traj2.accelerations[0].linear.z = az;
+		traj2.transforms[0].rotation.w = 0;
+		traj2.transforms[0].rotation.x = 0;
+		traj2.transforms[0].rotation.y = 0;
+		traj2.transforms[0].rotation.z = 0;
 
 		traj_pub.publish(traj);
 		traj_pub2.publish(traj2);
-
+        traj_pub3.publish(traj3);
+        
 		ros::spinOnce();
 		loop_rate.sleep();
 	}

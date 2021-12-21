@@ -119,7 +119,7 @@
 -->    
     <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
       <alwaysOn>true</alwaysOn>
-      <updateRate>50.0</updateRate>
+      <updateRate>250.0</updateRate>
       <bodyName>obstacle</bodyName>
       <topicName>position</topicName>
       <gaussianNoise>0.01</gaussianNoise>
