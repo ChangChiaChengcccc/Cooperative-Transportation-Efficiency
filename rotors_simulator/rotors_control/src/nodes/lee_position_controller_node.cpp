@@ -48,7 +48,7 @@ LeePositionControllerNode::LeePositionControllerNode(const
 	motor_velocity_reference_pub_ = nh_.advertise<mav_msgs::Actuators>(
 	                                        mav_msgs::default_topics::COMMAND_ACTUATORS, 1);
 
-	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/error", 1);
+	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris1/error", 1);
 
 	command_timer_ = nh_.createTimer(ros::Duration(0), &LeePositionControllerNode::TimedCommandCallback, this,
 	                                 true, false);

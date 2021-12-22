@@ -48,7 +48,8 @@ private:
 	ros::Publisher attitude_error_pub_;
 	ros::Publisher omega_error_pub_;
 	ros::Publisher error_pub_;
-	ros::Publisher payload_control_input_pub_;
+	ros::Publisher iris1_control_input_pub_;
+	ros::Publisher iris2_control_input_pub_;
 
 	mav_msgs::EigenTrajectoryPointDeque commands_;
 	std::deque<ros::Duration> command_waiting_times_;

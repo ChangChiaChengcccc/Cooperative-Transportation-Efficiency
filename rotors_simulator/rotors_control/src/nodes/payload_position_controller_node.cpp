@@ -24,9 +24,10 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 	odometry_sub_ = nh_.subscribe("/payload/position", 1,
 	                              &PayloadPositionControllerNode::OdometryCallback, this);
 
-	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/error", 1);
+	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/system/error", 1);
 
-	payload_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/payload_control_input", 1);
+	iris1_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris1_control_input", 1);
+	iris2_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris2_control_input", 1);
 
 	command_timer_ = nh_.createTimer(ros::Duration(0), &PayloadPositionControllerNode::TimedCommandCallback, this,
 	                                 true, false); 
@@ -162,12 +163,13 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	payload_position_controller_.SetOdometry(odometry);
 
 	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
-	nav_msgs::Odometry error;
-	nav_msgs::Odometry payload_control_input;
-	payload_position_controller_.CalculateControlInput(&payload_control_input,&error);
+	nav_msgs::Odometry payload_error;
+	nav_msgs::Odometry iris1_control_input, iris2_control_input;
+	payload_position_controller_.CalculateControlInput(&iris1_control_input, &iris2_control_input, &payload_error);
 
-	error_pub_.publish(error);
-	payload_control_input_pub_.publish(payload_control_input);
+	error_pub_.publish(payload_error);
+	iris1_control_input_pub_.publish(iris1_control_input);
+	iris2_control_input_pub_.publish(iris2_control_input);
 }
 
 }
