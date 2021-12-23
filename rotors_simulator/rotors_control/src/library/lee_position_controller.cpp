@@ -46,7 +46,7 @@ void LeePositionController::InitializeParameters()
 	initialized_params_ = true;
 }
 
-void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities, nav_msgs::Odometry* error)
+void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities, nav_msgs::Odometry* error, EigenOdometry* control_input)
 {
 	assert(rotor_velocities);
 	assert(initialized_params_);
@@ -57,17 +57,6 @@ void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
 		*rotor_velocities = Eigen::VectorXd::Zero(rotor_velocities->rows());
 		return;
 	}
-
-	// compute b_3_d and the acceleration
-	Eigen::Vector3d force_control_input;
-	ComputeDesiredForce(&force_control_input);
-
-	// compute angular acceleration and moment control input
-	Eigen::Vector3d moment_control_input;
-	ComputeDesiredMoment(force_control_input, &moment_control_input);
-
-	// subscribe control input from payload 
-	
 
 	// position_error is computed in ComputeDesiredForce
 	error->pose.pose.position.x = position_error(0);
@@ -84,14 +73,14 @@ void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
 	error->twist.twist.angular.y = angular_rate_error(1);
 	error->twist.twist.angular.z = angular_rate_error(2);
 
-	// comput thrust control input and project thrust onto body z axis.
-	double thrust = -force_control_input.dot(odometry_.orientation.toRotationMatrix().col(2));
-
-	// this block use moment control input to compute the rotor velocities of every rotor
-	// [4, 1] vector for moment and thrust
+	// get moment_thrust from subscribe control input
 	Eigen::Vector4d moment_thrust;
-	moment_thrust.block<3, 1>(0, 0) = moment_control_input;
-	moment_thrust(3) = thrust;
+	moment_thrust(0) = control_input->orientation.x();
+	moment_thrust(1) = control_input->orientation.y();
+	moment_thrust(2) = control_input->orientation.z();
+	moment_thrust(3) = control_input->orientation.w();
+
+	//std::cout << "moment_thrust_output\n" << moment_thrust << "\n\n";
 
 	*rotor_velocities = moment_thrust_to_rotor_velocities_ * moment_thrust;
 	*rotor_velocities = rotor_velocities->cwiseMax(Eigen::VectorXd::Zero(rotor_velocities->rows()));

@@ -121,7 +121,7 @@
       <alwaysOn>true</alwaysOn>
       <updateRate>250.0</updateRate>
       <bodyName>obstacle</bodyName>
-      <topicName>position</topicName>
+      <topicName>odometry</topicName>
       <gaussianNoise>0.01</gaussianNoise>
       <frameName>world</frameName>
       <xyzOffsets>0 0 0</xyzOffsets>

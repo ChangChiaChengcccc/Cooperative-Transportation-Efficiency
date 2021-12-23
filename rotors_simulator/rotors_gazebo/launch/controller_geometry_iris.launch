@@ -30,7 +30,6 @@
         <node name="payload_position_controller_node" pkg="rotors_control" type="payload_position_controller_node" output="screen">
             <rosparam command="load" file="$(find rotors_gazebo)/resource/lee_controller_$(arg mav_name).yaml" />
 <!--            <rosparam command="load" file="$(find rotors_gazebo)/resource/$(arg mav_name).yaml" /> -->
-            <remap from="odometry" to="odometry_sensor1/odometry" />
         </node>
 <!--
         <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen" args="0.6 0 1.3 0 2"/>

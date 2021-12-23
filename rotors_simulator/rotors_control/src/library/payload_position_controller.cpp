@@ -1,5 +1,6 @@
 #include "rotors_control/payload_position_controller.h"
 #include "rotors_control/tictoc.h"
+#include "rotors_control/phy.h"
 #include <ctime>
 #include <cstdlib>
 #include <chrono>
@@ -55,6 +56,7 @@ void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* iris1_
 	// compute iris1 and iris2 control input algorithm
 	Eigen::MatrixXd u_star;
 	ComputeUstar(&u_star, &sys_thrust_moment);
+	std::cout << u_star << std::endl;
 	iris1_thrust_moment = u_star.block<4, 1>(0, 0);
 	iris2_thrust_moment = u_star.block<4, 1>(4, 0);
 
@@ -103,12 +105,12 @@ void PayloadPositionController::ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vec
                           0,           0,          0,          0,            0,            0,           0, sqrt(2);			
 	*u_star = (H.inverse()*H.inverse()*A_T*(A*(H.inverse()*H.inverse())*A_T).inverse())* (*desired_control_input);	
 	
-	std::cout << "-------------A-------------"<<std::endl;
-	std::cout << A <<std::endl;
+	//std::cout << "-------------A-------------"<<std::endl;
+	//std::cout << A <<std::endl;
 	std::cout << "-------------USTAR-------------"<<std::endl;
 	std::cout << *u_star <<std::endl;
-	std::cout << "-------------A*u_star-----------" <<std::endl;
-	std::cout << A*(*u_star) <<std::endl;
+	//std::cout << "-------------A*u_star-----------" <<std::endl;
+	//std::cout << A*(*u_star) <<std::endl;
 	
 }
 
@@ -126,6 +128,7 @@ void PayloadPositionController::SetTrajectoryPoint(const mav_msgs::EigenTrajecto
 
 void PayloadPositionController::ComputeDesiredForce(Eigen::Vector3d* force_control_input)
 {
+	PhysicsParameters phy;
 	assert(force_control_input);
 	// this function is used to compute b_3_d in paper
 	Eigen::Vector3d e_3(Eigen::Vector3d::UnitZ());
@@ -143,8 +146,8 @@ void PayloadPositionController::ComputeDesiredForce(Eigen::Vector3d* force_contr
 	//connect the desired force with the acceleration command
 	*force_control_input = (position_error.cwiseProduct(controller_parameters_.position_gain_)
 	                        + velocity_error.cwiseProduct(controller_parameters_.velocity_gain_))
-	                       - vehicle_parameters_.mass_ * vehicle_parameters_.gravity_  * e_3
-	                       - vehicle_parameters_.mass_ * command_trajectory_.acceleration_W;
+	                       - phy.m_system * vehicle_parameters_.gravity_  * e_3
+	                       - phy.m_system * command_trajectory_.acceleration_W;
 }
 
 // Implementation from the T. Payload et al. paper
@@ -152,6 +155,10 @@ void PayloadPositionController::ComputeDesiredForce(Eigen::Vector3d* force_contr
 void PayloadPositionController::ComputeDesiredMoment(const Eigen::Vector3d& force_control_input,
                 Eigen::Vector3d* moment_control_input)
 {
+	PhysicsParameters phy;
+	phy.I_system << phy.Ixx_system,              0,          	 	 0,
+                             	 0, phy.Iyy_system,         		 0,
+                            	 0,              0,  	phy.Izz_system;   
 	assert(moment_control_input);
 
 	// quaternion -> rotation matrix
@@ -199,6 +206,6 @@ void PayloadPositionController::ComputeDesiredMoment(const Eigen::Vector3d& forc
 
 	*moment_control_input = - angle_error.cwiseProduct(controller_parameters_.attitude_gain_)
 	                        - angular_rate_error.cwiseProduct(controller_parameters_.angular_rate_gain_)
-	                        + odometry_.angular_velocity.cross(vehicle_parameters_.inertia_*odometry_.angular_velocity);
+	                        + odometry_.angular_velocity.cross(phy.I_system*odometry_.angular_velocity);
 }
 }

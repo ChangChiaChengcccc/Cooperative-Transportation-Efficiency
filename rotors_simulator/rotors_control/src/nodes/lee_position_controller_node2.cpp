@@ -35,13 +35,17 @@ LeePositionControllerNode::LeePositionControllerNode(const
 	InitializeParams();
 
 	cmd_sub_ = nh_.subscribe(
-	                   "/firefly2/desired_trajectory", 1,
+	                   "/iris2/desired_trajectory", 1,
 	                   &LeePositionControllerNode::CommandCallback, this);
 
+	iris2_control_input_sub_ = nh_.subscribe(
+	                   "/iris2_control_input", 1,
+	                   &LeePositionControllerNode::ControlInputCallback, this);
+	/*
 	cmd_multi_dof_joint_trajectory_sub_ = nh_.subscribe(
 	                mav_msgs::default_topics::COMMAND_TRAJECTORY, 1,
 	                &LeePositionControllerNode::MultiDofJointTrajectoryCallback, this);
-
+	*/
 	odometry_sub_ = nh_.subscribe(mav_msgs::default_topics::ODOMETRY, 1,
 	                              &LeePositionControllerNode::OdometryCallback, this);
 
@@ -119,6 +123,29 @@ void LeePositionControllerNode::CommandCallback(
 	commands_.pop_front();
 }
 
+void LeePositionControllerNode::ControlInputCallback(
+        const nav_msgs::OdometryConstPtr& control_input_msg)
+{
+	EigenOdometry control_input;
+	eigenOdometryFromMsg(control_input_msg, &control_input);
+
+	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
+	Eigen::VectorXd ref_rotor_velocities;
+	nav_msgs::Odometry error;
+	lee_position_controller_.CalculateRotorVelocities(&ref_rotor_velocities, &error, &control_input);
+
+	// Todo(ffurrer): Do this in the conversions header.
+	mav_msgs::ActuatorsPtr actuator_msg(new mav_msgs::Actuators);
+
+	actuator_msg->angular_velocities.clear();
+	for (int i = 0; i < ref_rotor_velocities.size(); i++)
+		actuator_msg->angular_velocities.push_back(ref_rotor_velocities[i]);
+	actuator_msg->header.stamp = odometry_msg_->header.stamp;
+
+	motor_velocity_reference_pub_.publish(actuator_msg);
+	error_pub_.publish(error);
+}
+/*
 void LeePositionControllerNode::MultiDofJointTrajectoryCallback(
         const trajectory_msgs::MultiDOFJointTrajectoryConstPtr& msg)
 {
@@ -158,7 +185,7 @@ void LeePositionControllerNode::MultiDofJointTrajectoryCallback(
 		command_timer_.start();
 	}
 }
-
+*/
 void LeePositionControllerNode::TimedCommandCallback(const ros::TimerEvent& e)
 {
 	if(commands_.empty()) {
@@ -184,25 +211,9 @@ void LeePositionControllerNode::OdometryCallback(const nav_msgs::OdometryConstPt
 	// put sensor data from gazebo to lee_position_controller_
 	// odometry contain position, orientation, velocity, angular_velocity
 	EigenOdometry odometry;
+	odometry_msg_ = odometry_msg;
 	eigenOdometryFromMsg(odometry_msg, &odometry);
 	lee_position_controller_.SetOdometry(odometry);
-
-	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
-	Eigen::VectorXd ref_rotor_velocities;
-	nav_msgs::Odometry error;
-	lee_position_controller_.CalculateRotorVelocities(&ref_rotor_velocities, &error);
-
-	// Todo(ffurrer): Do this in the conversions header.
-	mav_msgs::ActuatorsPtr actuator_msg(new mav_msgs::Actuators);
-
-	actuator_msg->angular_velocities.clear();
-	for (int i = 0; i < ref_rotor_velocities.size(); i++)
-		actuator_msg->angular_velocities.push_back(ref_rotor_velocities[i]);
-	actuator_msg->header.stamp = odometry_msg->header.stamp;
-
-	motor_velocity_reference_pub_.publish(actuator_msg);
-
-	error_pub_.publish(error);
 }
 
 }

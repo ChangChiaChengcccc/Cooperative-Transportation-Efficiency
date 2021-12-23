@@ -44,13 +44,13 @@ int main(int argc, char **argv)
 
 	ROS_INFO("Hello world!");
 
-	ros::Publisher  traj_pub = nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/firefly1/desired_trajectory", 1);
-	ros::Publisher  traj_pub2= nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/firefly2/desired_trajectory", 1);
-	ros::Publisher  traj_pub3= nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/payload/desired_trajectory", 1);	
+	ros::Publisher  traj_pub = nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/payload/desired_trajectory", 1);
+	ros::Publisher  traj_pub1= nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/iris1/desired_trajectory", 1);
+	ros::Publisher  traj_pub2= nh.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>("/iris2/desired_trajectory", 1);	
 	double dt = 50.0;
 	ros::Rate loop_rate(dt);
 	nh.setParam("/start",true);
-	trajectory_msgs::MultiDOFJointTrajectoryPoint traj,traj2,traj3;
+	trajectory_msgs::MultiDOFJointTrajectoryPoint traj,traj1,traj2;
 
 	//planning
 	qptrajectory plan;
@@ -137,13 +137,13 @@ int main(int argc, char **argv)
 	traj.velocities.push_back(twist);
 	traj.accelerations.push_back(twist);
 
+	traj1.transforms.push_back(transform);
+	traj1.velocities.push_back(twist);
+	traj1.accelerations.push_back(twist);
+	
 	traj2.transforms.push_back(transform);
 	traj2.velocities.push_back(twist);
 	traj2.accelerations.push_back(twist);
-	
-	traj3.transforms.push_back(transform);
-	traj3.velocities.push_back(twist);
-	traj3.accelerations.push_back(twist);
 
 	while(ros::ok()) {
 
@@ -203,19 +203,19 @@ int main(int argc, char **argv)
 		traj.transforms[0].rotation.y = 0;
 		traj.transforms[0].rotation.z = 0;
 
-		traj2.transforms[0].translation.x = vir_x-1.2;
-		traj2.transforms[0].translation.y = vir_y;
-		traj2.transforms[0].translation.z = vir_z;
-		traj2.velocities[0].linear.x = vx;
-		traj2.velocities[0].linear.y = vy;
-		traj2.velocities[0].linear.z = vz;
-		traj2.accelerations[0].linear.x = ax;
-		traj2.accelerations[0].linear.y = ay;
-		traj2.accelerations[0].linear.z = az;
-		traj2.transforms[0].rotation.w = 0;
-		traj2.transforms[0].rotation.x = 0;
-		traj2.transforms[0].rotation.y = 0;
-		traj2.transforms[0].rotation.z = 0;
+		traj1.transforms[0].translation.x = vir_x+0.6;
+		traj1.transforms[0].translation.y = vir_y;
+		traj1.transforms[0].translation.z = vir_z;
+		traj1.velocities[0].linear.x = vx;
+		traj1.velocities[0].linear.y = vy;
+		traj1.velocities[0].linear.z = vz;
+		traj1.accelerations[0].linear.x = ax;
+		traj1.accelerations[0].linear.y = ay;
+		traj1.accelerations[0].linear.z = az;
+		traj1.transforms[0].rotation.w = 0;
+		traj1.transforms[0].rotation.x = 0;
+		traj1.transforms[0].rotation.y = 0;
+		traj1.transforms[0].rotation.z = 0;
 		
 		traj2.transforms[0].translation.x = vir_x-0.6;
 		traj2.transforms[0].translation.y = vir_y;
@@ -232,8 +232,8 @@ int main(int argc, char **argv)
 		traj2.transforms[0].rotation.z = 0;
 
 		traj_pub.publish(traj);
-		traj_pub2.publish(traj2);
-        traj_pub3.publish(traj3);
+		traj_pub1.publish(traj1);
+        traj_pub2.publish(traj2);
         
 		ros::spinOnce();
 		loop_rate.sleep();

@@ -16,12 +16,12 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 	cmd_sub_ = nh_.subscribe(
 	                   "/payload/desired_trajectory", 1,
 	                   &PayloadPositionControllerNode::CommandCallback, this);
-
+	/*
 	cmd_multi_dof_joint_trajectory_sub_ = nh_.subscribe(
 	                mav_msgs::default_topics::COMMAND_TRAJECTORY, 1,
 	                &PayloadPositionControllerNode::MultiDofJointTrajectoryCallback, this);
-
-	odometry_sub_ = nh_.subscribe("/payload/position", 1,
+	*/
+	odometry_sub_ = nh_.subscribe("/payload/odometry", 1,
 	                              &PayloadPositionControllerNode::OdometryCallback, this);
 
 	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/system/error", 1);
@@ -92,6 +92,7 @@ void PayloadPositionControllerNode::CommandCallback(
 	// put eigen_reference into command_trajectory_ under the payload_position_controller_
 	payload_position_controller_.SetTrajectoryPoint(commands_.front());
 	commands_.pop_front();
+	// std::cout << "In payload CommandCallback function" << std::endl;
 }
 
 void PayloadPositionControllerNode::MultiDofJointTrajectoryCallback(
@@ -161,6 +162,7 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	EigenOdometry odometry;
 	eigenOdometryFromMsg(odometry_msg, &odometry);
 	payload_position_controller_.SetOdometry(odometry);
+	std::cout << "In payload OdometryCallback function" << std::endl;
 
 	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
 	nav_msgs::Odometry payload_error;
