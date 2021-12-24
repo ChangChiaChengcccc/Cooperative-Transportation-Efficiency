@@ -46,7 +46,7 @@ void LeePositionController::InitializeParameters()
 	initialized_params_ = true;
 }
 
-void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities, nav_msgs::Odometry* error, EigenOdometry* control_input)
+void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities, nav_msgs::Odometry* error, const nav_msgs::OdometryConstPtr& control_input)
 {
 	assert(rotor_velocities);
 	assert(initialized_params_);
@@ -72,19 +72,26 @@ void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
 	error->twist.twist.angular.x = angular_rate_error(0);
 	error->twist.twist.angular.y = angular_rate_error(1);
 	error->twist.twist.angular.z = angular_rate_error(2);
-
+	/*
+	std::cout << "control_input->orientation.x()\n" << control_input->pose.pose.orientation.x << std::endl;
+	std::cout << "control_input->orientation.y()\n" << control_input->pose.pose.orientation.y << std::endl;
+	std::cout << "control_input->orientation.z()\n" << control_input->pose.pose.orientation.z << std::endl;
+	std::cout << "control_input->orientation.w()\n" << control_input->pose.pose.orientation.w << std::endl;
+	*/
 	// get moment_thrust from subscribe control input
 	Eigen::Vector4d moment_thrust;
-	moment_thrust(0) = control_input->orientation.x();
-	moment_thrust(1) = control_input->orientation.y();
-	moment_thrust(2) = control_input->orientation.z();
-	moment_thrust(3) = control_input->orientation.w();
-
+	moment_thrust(0) = control_input->pose.pose.orientation.x;
+	moment_thrust(1) = control_input->pose.pose.orientation.y;
+	moment_thrust(2) = control_input->pose.pose.orientation.z;
+	moment_thrust(3) = control_input->pose.pose.orientation.w;
+	//std::cout << "moment_thrust\n" << moment_thrust << std::endl;
 	//std::cout << "moment_thrust_output\n" << moment_thrust << "\n\n";
 
 	*rotor_velocities = moment_thrust_to_rotor_velocities_ * moment_thrust;
 	*rotor_velocities = rotor_velocities->cwiseMax(Eigen::VectorXd::Zero(rotor_velocities->rows()));
 	*rotor_velocities = rotor_velocities->cwiseSqrt();
+
+	//std::cout << "*rotor_velocities\n" << *rotor_velocities << std::endl;
 }
 
 void LeePositionController::SetOdometry(const EigenOdometry& odometry)

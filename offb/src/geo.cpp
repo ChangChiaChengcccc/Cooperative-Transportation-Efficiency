@@ -59,42 +59,42 @@ int main(int argc, char **argv)
 	std::vector<trajectory_profile> data;
 	double sample = 0.003;
 
-	p1.pos<< 0.6, 0, 1.3;
+	p1.pos<< 0, 0, 1.3;
 	p1.vel<< 0, 0, 0;
 	p1.acc<< 0, 0, 0;
 	p1.yaw = 0;
 
-	p2.pos<< 1.5, 1.5, 1.3;
+	p2.pos<< 1.0, 1.0, 1.3;
 	p2.vel<< 0, 0, 0;
 	p2.acc<< 0, 0, 0;
 	p2.yaw = 0;
 
-	p3.pos<< -1.5, 1.5, 1.3;
+	p3.pos<< -1.0, 1.0, 1.3;
 	p3.vel<< 0, 0, 0;
 	p3.acc<< 0, 0, 0;
 	p3.yaw = 0;
 
-	p4.pos << -1.5, -1.5, 1.3;
+	p4.pos << -1.0, -1.0, 1.3;
 	p4.vel << 0, 0, 0;
 	p4.acc << 0, 0, 0;
 	p4.yaw = 0;
 
-	p5.pos << 1.5, -1.5, 1.3;
+	p5.pos << 1.0, -1.0, 1.3;
 	p5.vel << 0, 0, 0;
 	p5.acc << 0, 0, 0;
 	p5.yaw = 0;
 
-	p6.pos<< 1.5, 1.5, 1.3;
+	p6.pos<< 1.0, 1.0, 1.3;
 	p6.vel<< 0, 0, 0;
 	p6.acc<< 0, 0, 0;
 	p6.yaw = 0;
 
-	p7.pos << -1.5, 1.5, 1.3;
+	p7.pos << -1.0, 1.0, 1.3;
 	p7.vel << 0, 0, 0;
 	p7.acc << 0, 0, 0;
 	p7.yaw = 0;
 
-	p8.pos << 0.6, 0, 1.3;
+	p8.pos << 0, 0, 1.3;
 	p8.vel << 0, 0, 0;
 	p8.acc << 0, 0, 0;
 	p8.yaw = 0;
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 	path.push_back(segments(p7, p8, 1.5));
 	data = plan.get_profile(path, path.size(), sample);
 
-	desired_pose.pose.position.x = 0.6;
+	desired_pose.pose.position.x = 0.0;
 	desired_pose.pose.position.y = 0.0;
 	desired_pose.pose.position.z = 1.3;
 

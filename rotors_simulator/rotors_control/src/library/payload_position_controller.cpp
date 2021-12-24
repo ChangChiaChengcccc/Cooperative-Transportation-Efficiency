@@ -23,6 +23,7 @@ void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* iris1_
 	// compute b_3_d and the acceleration
 	Eigen::Vector3d force_control_input;
 	ComputeDesiredForce(&force_control_input);
+	//std::cout << "force_control_input\n" << force_control_input << std::endl;
 
 	// compute angular acceleration and moment control input
 	Eigen::Vector3d moment_control_input;
@@ -44,33 +45,35 @@ void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* iris1_
 
 	// comput thrust control input and project thrust onto body z axis.
 	double thrust = -force_control_input.dot(odometry_.orientation.toRotationMatrix().col(2));
+	//std::cout << "thrust\n" << thrust << std::endl;
 
 	// this block use moment control input to compute the rotor velocities of every rotor
 	// [4, 1] vector for moment and thrust
 	Eigen::Vector4d sys_thrust_moment;
 	Eigen::Vector4d iris1_thrust_moment,iris2_thrust_moment;
-	sys_thrust_moment(3) = thrust;
+	sys_thrust_moment(0) = thrust;
 	sys_thrust_moment.block<3, 1>(1, 0) = moment_control_input;
+	//std::cout << "sys_thrust_moment\n" << sys_thrust_moment << std::endl;
 	
 
 	// compute iris1 and iris2 control input algorithm
 	Eigen::MatrixXd u_star;
 	ComputeUstar(&u_star, &sys_thrust_moment);
-	std::cout << u_star << std::endl;
+	//std::cout << u_star << std::endl;
 	iris1_thrust_moment = u_star.block<4, 1>(0, 0);
 	iris2_thrust_moment = u_star.block<4, 1>(4, 0);
 
 
 	// publish payload_control_input and it has already changed the order (thrust_moment --> moment_thrust)
-	iris1_control_input->pose.pose.orientation.x = iris1_thrust_moment(3);
-	iris1_control_input->pose.pose.orientation.y = iris1_thrust_moment(0);
-	iris1_control_input->pose.pose.orientation.z = iris1_thrust_moment(1);
-	iris1_control_input->pose.pose.orientation.w = iris1_thrust_moment(2);
+	iris1_control_input->pose.pose.orientation.x = iris1_thrust_moment(1);
+	iris1_control_input->pose.pose.orientation.y = iris1_thrust_moment(2);
+	iris1_control_input->pose.pose.orientation.z = iris1_thrust_moment(3);
+	iris1_control_input->pose.pose.orientation.w = iris1_thrust_moment(0);
 
-	iris2_control_input->pose.pose.orientation.x = iris2_thrust_moment(3);
-	iris2_control_input->pose.pose.orientation.y = iris2_thrust_moment(0);
-	iris2_control_input->pose.pose.orientation.z = iris2_thrust_moment(1);
-	iris2_control_input->pose.pose.orientation.w = iris2_thrust_moment(2);
+	iris2_control_input->pose.pose.orientation.x = iris2_thrust_moment(1);
+	iris2_control_input->pose.pose.orientation.y = iris2_thrust_moment(2);
+	iris2_control_input->pose.pose.orientation.z = iris2_thrust_moment(3);
+	iris2_control_input->pose.pose.orientation.w = iris2_thrust_moment(0);
 }
 
 void PayloadPositionController::ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vector4d* desired_control_input)
@@ -84,15 +87,17 @@ void PayloadPositionController::ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vec
 	A.setZero(4,8);
 	H.setZero(8,8);
 	A_T.setZero(8,4);
+	
 	float w = odometry_.orientation.w();
 	float x = odometry_.orientation.x();
 	float y = odometry_.orientation.y();
 	float z = odometry_.orientation.z();
 	float A_yaw = atan2((2.0 * (w * z + x * y)),(1.0 - 2.0 * (y*y + z* z)));
+	
 	//desired_control_input << 1.0,2.0,3.0,4.0;
 	A <<    1 ,                    0,                    0,  0,  1,                    0,                   0, 0, 
-                y ,  cos(A_yaw),  -sin(A_yaw),  0,  y,  cos(A_yaw), -sin(A_yaw), 0,
-               -x ,  sin(A_yaw),   cos(A_yaw),  0,  -x,  sin(A_yaw),  cos(A_yaw), 0,
+                0 ,  cos(A_yaw),  -sin(A_yaw),  0,  0,  cos(A_yaw), -sin(A_yaw), 0,
+               -0.6 ,  sin(A_yaw),   cos(A_yaw),  0,  0.6,  sin(A_yaw),  cos(A_yaw), 0,
                 0 ,                    0,                    0,  1,  0,                    0,                    0, 1; 
 	A_T = A.transpose();
 	H<< 	sqrt(2),            0,         0,          0,           0,            0,           0,           0,
@@ -107,8 +112,10 @@ void PayloadPositionController::ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vec
 	
 	//std::cout << "-------------A-------------"<<std::endl;
 	//std::cout << A <<std::endl;
-	std::cout << "-------------USTAR-------------"<<std::endl;
-	std::cout << *u_star <<std::endl;
+	//std::cout << "-------------Desired control input-------"<<std::endl;
+	//std::cout << *desired_control_input <<std::endl;
+	//std::cout << "-------------USTAR-------------"<<std::endl;
+	//std::cout << *u_star <<std::endl;
 	//std::cout << "-------------A*u_star-----------" <<std::endl;
 	//std::cout << A*(*u_star) <<std::endl;
 	
@@ -117,7 +124,9 @@ void PayloadPositionController::ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vec
 
 void PayloadPositionController::SetOdometry(const EigenOdometry& odometry)
 {
+	PhysicsParameters phy;
 	odometry_ = odometry;
+	odometry_.position.z() = odometry_.position.z()+phy.z_offset;
 }
 
 void PayloadPositionController::SetTrajectoryPoint(const mav_msgs::EigenTrajectoryPoint& command_trajectory)
@@ -148,6 +157,20 @@ void PayloadPositionController::ComputeDesiredForce(Eigen::Vector3d* force_contr
 	                        + velocity_error.cwiseProduct(controller_parameters_.velocity_gain_))
 	                       - phy.m_system * vehicle_parameters_.gravity_  * e_3
 	                       - phy.m_system * command_trajectory_.acceleration_W;
+
+	//debug
+	/*
+	Eigen::Vector3d first_term, second_term, third_term, forth_term;
+	first_term = position_error.cwiseProduct(controller_parameters_.position_gain_);
+	std::cout << "position_error.cwiseProduct(controller_parameters_.position_gain_)\n" << first_term << std::endl;
+	second_term = velocity_error.cwiseProduct(controller_parameters_.velocity_gain_);
+	std::cout << "velocity_error.cwiseProduct(controller_parameters_.velocity_gain_)\n" << second_term << std::endl;
+	third_term = -phy.m_system * vehicle_parameters_.gravity_  * e_3;
+	std::cout << "- phy.m_system * vehicle_parameters_.gravity_  * e_3\n" << third_term << std::endl;
+	forth_term = -phy.m_system * command_trajectory_.acceleration_W ;
+	std::cout << "- phy.m_system * command_trajectory_.acceleration_W\n" << forth_term << std::endl;
+	*/
+	//std::cout << "*force_control_input\n" << *force_control_input << std::endl;
 }
 
 // Implementation from the T. Payload et al. paper

@@ -24,7 +24,7 @@ public:
 
         double m_q1 = 1.55;
         double m_q2 = 1.55;
-        double m_p = 5.3;
+        double m_p = 0.3;
         double m_system = m_q1 + m_q2 + m_p;
         
         double x_com = (x_q1*m_q1+x_q2*m_q2+x_p *m_p) / m_system;

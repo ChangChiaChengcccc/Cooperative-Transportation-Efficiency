@@ -126,13 +126,13 @@ void LeePositionControllerNode::CommandCallback(
 void LeePositionControllerNode::ControlInputCallback(
         const nav_msgs::OdometryConstPtr& control_input_msg)
 {
-	EigenOdometry control_input;
-	eigenOdometryFromMsg(control_input_msg, &control_input);
+	//EigenOdometry control_input;
+	//eigenOdometryFromMsg(control_input_msg, &control_input);
 
 	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
 	Eigen::VectorXd ref_rotor_velocities;
 	nav_msgs::Odometry error;
-	lee_position_controller_.CalculateRotorVelocities(&ref_rotor_velocities, &error, &control_input);
+	lee_position_controller_.CalculateRotorVelocities(&ref_rotor_velocities, &error, control_input_msg);
 
 	// Todo(ffurrer): Do this in the conversions header.
 	mav_msgs::ActuatorsPtr actuator_msg(new mav_msgs::Actuators);

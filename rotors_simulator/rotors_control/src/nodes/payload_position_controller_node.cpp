@@ -162,7 +162,7 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	EigenOdometry odometry;
 	eigenOdometryFromMsg(odometry_msg, &odometry);
 	payload_position_controller_.SetOdometry(odometry);
-	std::cout << "In payload OdometryCallback function" << std::endl;
+	//std::cout << "In payload OdometryCallback function" << std::endl;
 
 	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
 	nav_msgs::Odometry payload_error;

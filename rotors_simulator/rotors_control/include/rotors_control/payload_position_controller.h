@@ -16,10 +16,17 @@ namespace rotors_control
 
 
 // Default values for the Payload position controller and the Asctec Firefly.
+// original
+/*
 static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(6, 6, 6);              // 16, 16, 16
 static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
 static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 3, 0.15);           // 2, 1.5, 0.035
 static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 0.52, 0.18);  // 0.52, 0.52, 0.025
+*/
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(6, 6, 6);            
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);      
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 9, 0.15);          
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 4, 0.18);  
 
 class PayloadPositionControllerParameters
 {
