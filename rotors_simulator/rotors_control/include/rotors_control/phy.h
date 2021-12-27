@@ -34,5 +34,5 @@ public:
         double Ixx_system = (Ixx_q + m_q1*(pow((z_q1 - z_com),2) +pow((y_q1 - y_com),2))) + (Ixx_q + m_q2*(pow((z_q2 - z_com),2) + pow((y_q2 - y_com),2))) + (Ixx_p + m_p*(pow((z_p - z_com),2) + pow((y_p - y_com),2)));
         double Iyy_system = (Iyy_q + m_q1*(pow((z_q1 - z_com),2) +pow((x_q1 - x_com),2))) + (Iyy_q + m_q2*(pow((z_q2 - z_com),2) + pow((x_q2 - x_com),2))) + (Iyy_p + m_p*(pow((x_p - x_com),2) + pow((z_p - z_com),2)));
         double Izz_system = (Izz_q + m_q1*(pow((y_q1 - y_com),2) +pow((x_q1 - x_com),2))) + (Izz_q + m_q2*(pow((y_q2 - y_com),2) + pow((x_q2 - x_com),2))) + (Izz_p + m_p*(pow((x_p - x_com),2) + pow((y_p - y_com),2)));
-        Eigen::Matrix3d I_system;             
+        Eigen::Matrix3d I_system;                   
 };

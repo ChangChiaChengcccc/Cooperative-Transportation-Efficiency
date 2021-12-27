@@ -65,7 +65,8 @@
         "random": "cpp",
         "set": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "bit": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/home/ncrl/research_ws/devel/lib/python2.7/dist-packages",

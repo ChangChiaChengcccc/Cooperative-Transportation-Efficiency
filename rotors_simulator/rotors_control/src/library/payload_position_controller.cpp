@@ -152,11 +152,19 @@ void PayloadPositionController::ComputeDesiredForce(Eigen::Vector3d* force_contr
 	Eigen::Vector3d velocity_W =  R_W_I * odometry_.velocity;
 	velocity_error = velocity_W - command_trajectory_.velocity_W;
 
+	//Get Moment of Inertia
+	phy.I_system << phy.Ixx_system, 0, 0,
+                    0, phy.Iyy_system, 0,
+                    0, 0, phy.Izz_system;  
+
 	//connect the desired force with the acceleration command
 	*force_control_input = (position_error.cwiseProduct(controller_parameters_.position_gain_)
 	                        + velocity_error.cwiseProduct(controller_parameters_.velocity_gain_))
 	                       - phy.m_system * vehicle_parameters_.gravity_  * e_3
 	                       - phy.m_system * command_trajectory_.acceleration_W;
+	
+	//std::cout << "phy.m_system\n" << phy.m_system <<std::endl;
+	//std::cout << "phy.I_system\n" << phy.I_system <<std::endl;
 
 	//debug
 	/*
@@ -230,5 +238,12 @@ void PayloadPositionController::ComputeDesiredMoment(const Eigen::Vector3d& forc
 	*moment_control_input = - angle_error.cwiseProduct(controller_parameters_.attitude_gain_)
 	                        - angular_rate_error.cwiseProduct(controller_parameters_.angular_rate_gain_)
 	                        + odometry_.angular_velocity.cross(phy.I_system*odometry_.angular_velocity);
+}
+
+Eigen::Vector3d PayloadPositionController::System_Error_rqt(){
+	Eigen::Vector3d pos_err;
+	pos_err = position_error;
+	return pos_err;
+
 }
 }
