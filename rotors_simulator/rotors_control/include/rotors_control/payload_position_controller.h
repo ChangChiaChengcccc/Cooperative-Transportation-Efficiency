@@ -66,10 +66,12 @@ static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 80, 0.15)
 static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 15, 0.18);  // 0.52, 0.52, 0.025
 */
 // the key is tuning  Kpos and katt 22 80
-static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(22, 22, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(15, 15, 6);              // 16, 16, 16
 static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
-static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 80, 0.15);           // 2, 1.5, 0.035
-static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 15, 0.18);  // 0.52, 0.52, 0.025
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 35, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+
+
 class PayloadPositionControllerParameters
 {
 public:
