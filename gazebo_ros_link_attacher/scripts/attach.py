@@ -52,7 +52,7 @@ link_name_2: 'link'"
     req.model_name_1 = "iris1"
     req.link_name_1 = "iris1/base_link"
     req.model_name_2 = "payload"
-    req.link_name_2 = "obstacle"
+    req.link_name_2 = "payload_link_1"
 
     attach_srv.call(req)
 
@@ -61,6 +61,6 @@ link_name_2: 'link'"
     req.model_name_1 = "iris2"
     req.link_name_1 = "iris2/base_link"
     req.model_name_2 = "payload"
-    req.link_name_2 = "obstacle"
+    req.link_name_2 = "payload_link_2"
 
     attach_srv.call(req)
