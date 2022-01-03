@@ -35,6 +35,7 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 
 	command_timer_ = nh_.createTimer(ros::Duration(0), &PayloadPositionControllerNode::TimedCommandCallback, this,
 	                                 true, false); 
+	msg.layout.dim.push_back(std_msgs::MultiArrayDimension()); // for /estimate_state topic
 }
 
 PayloadPositionControllerNode::~PayloadPositionControllerNode() { }
@@ -186,10 +187,11 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 
 void PayloadPositionControllerNode::Setmsg(Eigen::Vector3d tmp2){
 	std::vector<double> vec1 = {tmp2(0),tmp2(1),tmp2(2)};
-	msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
+	/*
 	msg.layout.dim[0].size = vec1.size();
 	msg.layout.dim[0].stride = 1;
 	msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
+	*/
 
 	// copy in the data
 	msg.data.clear();
