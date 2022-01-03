@@ -5,6 +5,8 @@
 
 #include "rotors_control/parameters_ros.h"
 
+#include <std_msgs/Float64MultiArray.h>
+
 namespace rotors_control
 {
 PayloadPositionControllerNode::PayloadPositionControllerNode(const
@@ -29,8 +31,11 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 	iris1_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris1_control_input", 1);
 	iris2_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris2_control_input", 1);
 
+	System_Error_rqt_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/system/error/rqt", 1);
+
 	command_timer_ = nh_.createTimer(ros::Duration(0), &PayloadPositionControllerNode::TimedCommandCallback, this,
 	                                 true, false); 
+	msg.layout.dim.push_back(std_msgs::MultiArrayDimension()); // for /estimate_state topic
 }
 
 PayloadPositionControllerNode::~PayloadPositionControllerNode() { }
@@ -169,12 +174,32 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	nav_msgs::Odometry iris1_control_input, iris2_control_input;
 	payload_position_controller_.CalculateControlInput(&iris1_control_input, &iris2_control_input, &payload_error);
 
+	// Setmsg 
+	Eigen::Vector3d tmp;
+	tmp = payload_position_controller_.System_Error_rqt();
+	Setmsg(tmp);
+
 	error_pub_.publish(payload_error);
 	iris1_control_input_pub_.publish(iris1_control_input);
 	iris2_control_input_pub_.publish(iris2_control_input);
+	System_Error_rqt_pub_.publish(msg);
+}
+
+void PayloadPositionControllerNode::Setmsg(Eigen::Vector3d tmp2){
+	std::vector<double> vec1 = {tmp2(0),tmp2(1),tmp2(2)};
+	/*
+	msg.layout.dim[0].size = vec1.size();
+	msg.layout.dim[0].stride = 1;
+	msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
+	*/
+
+	// copy in the data
+	msg.data.clear();
+	msg.data.insert(msg.data.end(), vec1.begin(), vec1.end());
 }
 
 }
+
 
 int main(int argc, char** argv)
 {

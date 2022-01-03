@@ -18,15 +18,59 @@ namespace rotors_control
 // Default values for the Payload position controller and the Asctec Firefly.
 // original
 /*
-static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(6, 6, 6);              // 16, 16, 16
-static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
-static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 3, 0.15);           // 2, 1.5, 0.035
-static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 0.52, 0.18);  // 0.52, 0.52, 0.025
-*/
 static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(6, 6, 6);            
 static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);      
 static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 9, 0.15);          
 static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 4, 0.18);  
+*/
+/*
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(6, 6, 6);            
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);      
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 9, 0.15);          
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 4, 0.18);    
+*/
+/*
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(6, 6, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 9, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+*/
+/*
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(8, 8, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 11, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+*/
+/* crash because of gain
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(8, 8, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 11, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+*/
+/*
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(15, 15, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 22, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+*/
+/*best now no y axis swing and stable at last
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(15, 15, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 30, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+*/
+/*
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(22, 22, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 80, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 15, 0.18);  // 0.52, 0.52, 0.025
+*/
+// the key is tuning  Kpos and katt 22 80
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(15, 15, 6);              // 16, 16, 16
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 35, 0.15);           // 2, 1.5, 0.035
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
+
 
 class PayloadPositionControllerParameters
 {
@@ -56,8 +100,10 @@ public:
 	~PayloadPositionController();
 	void CalculateControlInput(nav_msgs::Odometry* iris1_control_input, nav_msgs::Odometry* iris2_control_input, nav_msgs::Odometry* error);
 	void ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vector4d* desired_control_input);
+	void ComputeQuadStates(Eigen::Vector3d* x1 ,Eigen::Vector3d* x2 ,Eigen::Vector3d* v1,Eigen::Vector3d* v2);
 	void SetOdometry(const EigenOdometry& odometry);
 	void SetTrajectoryPoint(const mav_msgs::EigenTrajectoryPoint& command_trajectory);
+	
 
 	PayloadPositionControllerParameters controller_parameters_;
 	VehicleParameters vehicle_parameters_;
@@ -80,6 +126,7 @@ public:
 
 	void ComputeDesiredForce(Eigen::Vector3d* force_control_input);
 	void ComputeDesiredMoment(const Eigen::Vector3d& force_control_input, Eigen::Vector3d* moment_control_input);
+	Eigen::Vector3d System_Error_rqt();
 };
 }
 

@@ -16,6 +16,8 @@
 
 #include "rotors_control/common.h"
 #include "rotors_control/payload_position_controller.h"
+#include <vector>
+#include <std_msgs/Float64MultiArray.h>
 
 namespace rotors_control
 {
@@ -50,10 +52,12 @@ private:
 	ros::Publisher error_pub_;
 	ros::Publisher iris1_control_input_pub_;
 	ros::Publisher iris2_control_input_pub_;
+	ros::Publisher System_Error_rqt_pub_;
 
 	mav_msgs::EigenTrajectoryPointDeque commands_;
 	std::deque<ros::Duration> command_waiting_times_;
 	ros::Timer command_timer_;
+	std_msgs::Float64MultiArray msg;
 
 	void TimedCommandCallback(const ros::TimerEvent& e);
 
@@ -64,6 +68,8 @@ private:
 	        const trajectory_msgs::MultiDOFJointTrajectoryPointConstPtr& cmd_msg);
 
 	void OdometryCallback(const nav_msgs::OdometryConstPtr& odometry_msg);
+
+	void Setmsg(Eigen::Vector3d tmp2);
 };
 }
 
