@@ -34,8 +34,8 @@ set(HEADERS_      src/forceest.h src/ukf.h)
 set(SOURCES_      src/forceest.cpp src/ukf.cpp)
 
 
-add_executable(force_estimatee src/force_estimate.cpp ${HEADERS_} ${SOURCES_})
-
+#add_executable(force_estimatee src/force_estimate.cpp ${HEADERS_} ${SOURCES_})
+add_executable(force_estimatee src/cooperate_ukf.cpp ${HEADERS_} ${SOURCES_})
 target_link_libraries(force_estimatee
    ${catkin_LIBRARIES}
 )
