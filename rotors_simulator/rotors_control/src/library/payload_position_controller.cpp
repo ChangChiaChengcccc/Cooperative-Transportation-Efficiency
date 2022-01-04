@@ -198,9 +198,11 @@ void PayloadPositionController::ComputeDesiredMoment(const Eigen::Vector3d& forc
 	// Get the desired rotation matrix.
 	// b_1_d is the time derivative of desired trajectory
 	Eigen::Vector3d b1_des;
+	// yaw rotate function 
 	/*double yaw = atan2(  command_trajectory_.velocity_W(1),command_trajectory_.velocity_W(0) );
 	if(yaw <0 ) {
-		yaw+=6.28;
+		//yaw+=6.28;
+		yaw+=0.1;
 	}*/
 
 	double yaw = command_trajectory_.getYaw();
