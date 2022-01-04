@@ -55,7 +55,8 @@ class UKF:
         tmp_mat = (self.n_dim + self.lambd)*self.p
 
         # print spr_mat
-        spr_mat = scipy.linalg.sqrtm(tmp_mat)
+        #spr_mat = scipy.linalg.sqrtm(tmp_mat)
+        spr_mat = np.linalg.cholesky(tmp_mat)
 
         ret[0] = self.x
         for i in range(self.n_dim):

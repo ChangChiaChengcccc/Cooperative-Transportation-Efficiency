@@ -4,6 +4,7 @@ import scipy.linalg
 #                          0, 0, 0, 0, 0, 0])  # O,w
 #print(initial_state)
 
-a = np.array([1.414,0,0],[0,1.414,0],[0,0,1.414])
+a = np.array([[4,0,0],[0,4,0],[0,0,4]])
 print(a)
-#scipy.linalg.sqrtm(a)
+b = np.linalg.cholesky(a)
+print(b)
