@@ -5,11 +5,11 @@ class PhysicsParameters
 public:
         double x_q1 = 0.6; 
         double y_q1 = 0;
-        double z_q1 = 0.27;
+        double z_q1 = 0.35;
 
         double x_q2 = -0.6;
         double y_q2 = 0;
-        double z_q2 = 0.27;
+        double z_q2 = 0.35;
 
         double x_p = 0;
         double y_p = 0;

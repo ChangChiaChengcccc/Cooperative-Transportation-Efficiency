@@ -21,89 +21,45 @@
 #include <nav_msgs/Odometry.h>
 
 
+
 #define l 0.25
 #define k 0.02
 std::string model_name;
 int drone_flag;
 forceest forceest1(statesize,measurementsize);
-geometry_msgs::Point euler, euler_ref, force, torque, bias, angular_v,pwm,battery_p,pose;
+geometry_msgs::Point euler, euler_ref, force1,force2, torque, bias, angular_v,pwm,battery_p,pose,vel;
 sensor_msgs::Imu drone2_imu;
 
-
-
 nav_msgs::Odometry odometry;
-geometry_msgs::PoseStamped drone2_pose;
-geometry_msgs::TwistStamped drone2_vel;
-void imu_cb(const sensor_msgs::Imu::ConstPtr &msg)
-{
-
-	drone2_imu = *msg;
-//drone2_pose.pose.orientation = drone2_imu.orientation;
+geometry_msgs::PoseStamped payload_pose;
+geometry_msgs::TwistStamped payload_vel;
 
 
-
-}
 void pose_cb(const nav_msgs::Odometry::ConstPtr &msg)
 {
 	odometry = *msg;
-	drone2_pose.pose = odometry.pose.pose;
-	drone2_vel.twist = odometry.twist.twist;
-
-	// std::cout <<drone2_pose.pose.position.x << "   " << drone2_pose.pose.position.y <<std::endl;
+	payload_pose.pose = odometry.pose.pose;
+	payload_vel.twist = odometry.twist.twist;
 
 }
 
-Eigen::Vector3d f1;
-Eigen::Vector3d f2;
-Eigen::Vector3d f3;
-Eigen::Vector3d f4;
-Eigen::Vector3d f5;
-Eigen::Vector3d f6;
 
-void f1_cb(const geometry_msgs::WrenchStamped::ConstPtr& msg)
-{
-	f1<<msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z ;
-}
 
-void f2_cb(const geometry_msgs::WrenchStamped::ConstPtr& msg)
-{
-	f2<<msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z ;
-}
 
-void f3_cb(const geometry_msgs::WrenchStamped::ConstPtr& msg)
-{
-	f3<<msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z ;
-}
 
-void f4_cb(const geometry_msgs::WrenchStamped::ConstPtr& msg)
-{
-	f4<<msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z ;
-}
-void f5_cb(const geometry_msgs::WrenchStamped::ConstPtr& msg)
-{
-	f5<<msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z ;
-}
-
-void f6_cb(const geometry_msgs::WrenchStamped::ConstPtr& msg)
-{
-	f6<<msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z ;
-}
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "force_estimate");
+	ros::init(argc, argv, "cooperate_ukf_estimate");
 	ros::NodeHandle nh;
 
-	std::string topic_imu, topic_mocap, topic_thrust, topic_vel, topic_mag, topic_raw,topic_battery;
-	ros::param::get("~topic_imu", topic_imu);
-	ros::param::get("~topic_mocap", topic_mocap);
+	std::string topic_thrust, topic_vel, topic_mag;
 	ros::param::get("~topic_thrust", topic_thrust);
-	ros::param::get("~topic_vel", topic_vel);
 	ros::param::get("~topic_vel", topic_vel);
 	ros::param::get("~topic_drone", drone_flag);
 	ros::param::get("~topic_mag", topic_mag);
-	ros::param::get("~topic_raw", topic_raw);
-	ros::param::get("~topic_battery", topic_battery);
+	
 
+/*
 	if(drone_flag == 2) {
 		model_name = "/firefly2/firefly2";
 		std::cout << "drone 2"<<std::endl;
@@ -113,26 +69,16 @@ int main(int argc, char **argv)
 		std::cout << "drone 1"<<std::endl;
 
 	}
+*/
 
-	ros::Subscriber imu_sub = nh.subscribe<sensor_msgs::Imu>(topic_imu, 4, imu_cb);  //ok
-	ros::Subscriber pos_sub = nh.subscribe<nav_msgs::Odometry>(topic_mocap, 4, pose_cb);
 
-	ros::Subscriber f1_sub = nh.subscribe(model_name+std::string("/rotor_0_ft"),2,f1_cb);
-	ros::Subscriber f2_sub = nh.subscribe(model_name+std::string("/rotor_1_ft"),2,f2_cb);
-	ros::Subscriber f3_sub = nh.subscribe(model_name+std::string("/rotor_2_ft"),2,f3_cb);
-	ros::Subscriber f4_sub = nh.subscribe(model_name+std::string("/rotor_3_ft"),2,f4_cb);
-	ros::Subscriber f5_sub = nh.subscribe(model_name+std::string("/rotor_4_ft"),2,f5_cb);
-	ros::Subscriber f6_sub = nh.subscribe(model_name+std::string("/rotor_5_ft"),2,f6_cb);
 
-	ros::Publisher euler_pub = nh.advertise<geometry_msgs::Point>("euler", 2);
-	ros::Publisher euler_ref_pub = nh.advertise<geometry_msgs::Point>("euler_ref", 2);
-	ros::Publisher force_pub = nh.advertise<geometry_msgs::Point>("force_estimate", 2);
-	ros::Publisher torque_pub = nh.advertise<geometry_msgs::Point>("torque", 2);
-	ros::Publisher bias_pub = nh.advertise<geometry_msgs::Point>("bias", 2);
-	ros::Publisher angular_v_pub = nh.advertise<geometry_msgs::Point>("angular_v", 2);
-	ros::Publisher pwm_pub = nh.advertise<geometry_msgs::Point>("pwm", 2);
-	ros::Publisher battery_pub = nh.advertise<geometry_msgs::Point>("battery", 2);
-	ros::Publisher pose_pub = nh.advertise<geometry_msgs::Point>("pose", 2);
+	ros::Subscriber pos_sub = nh.subscribe<nav_msgs::Odometry>("/payload/odometry", 4, pose_cb);
+
+	ros::Publisher pose_pub = nh.advertise<geometry_msgs::Point>("pose_estimate", 2);
+    ros::Publisher vel_pub = nh.advertise<geometry_msgs::Point>("vel_estimate", 2);
+    ros::Publisher force1_pub = nh.advertise<geometry_msgs::Point>("force1_estimate", 2);
+    ros::Publisher force2_pub = nh.advertise<geometry_msgs::Point>("force2_estimate", 2);
 	ros::Rate loop_rate(50);
 
 	double measure_ex, measure_ey, measure_ez;
@@ -149,15 +95,6 @@ int main(int argc, char **argv)
 	mnoise(mv_y,mv_y) = 1e-2;
 	mnoise(mv_z,mv_z) = 1e-2;
 
-	mnoise(ma_x,ma_x) = 1e-4;
-	mnoise(ma_y,ma_y) = 1e-4;
-	mnoise(ma_z,ma_z) = 1e-4;
-
-
-	mnoise(momega_x,momega_x) = 1e-2;
-	mnoise(momega_y,momega_y) = 1e-2;
-	mnoise(momega_z,momega_z) = 1e-2;
-
 	mnoise(me_x,me_x) = 1;//1
 	mnoise(me_y,me_y) = 1;
 	mnoise(me_z,me_z) = 1;
@@ -173,27 +110,17 @@ int main(int argc, char **argv)
 	pnoise(v_y,v_y) = 1e-2;
 	pnoise(v_z,v_z) = 1e-2;
 
-	pnoise(a_x,a_x) = 1e-2;
-	pnoise(a_y,a_y) = 1e-2;
-	pnoise(a_z,a_z) = 1e-2;
-
 	pnoise(e_x,e_x) = 0.005;//0.5,調小beta收斂較快
 	pnoise(e_y,e_y) = 0.005;
 	pnoise(e_z,e_z) = 0.005;
 
-	pnoise(omega_x,omega_x) = 1e-2;
-	pnoise(omega_y,omega_y) = 1e-2;
-	pnoise(omega_z,omega_z) = 1e-2;
+	pnoise(F1_x,F1_x) = 1.5;
+	pnoise(F1_y,F1_y) = 1.5;
+	pnoise(F1_z,F1_z) = 1.5;
 
-	pnoise(F_x,F_x) = 1.5;
-	pnoise(F_y,F_y) = 1.5;
-	pnoise(F_z,F_z) = 1.5;
-	pnoise(tau_z,tau_z) = 0.05;
-
-	pnoise(beta_x,beta_x) = 0.05;//調大beta會無法收斂
-	pnoise(beta_y,beta_y) = 0.05;
-	pnoise(beta_z,beta_z) = 0.05;
-
+    pnoise(F2_x,F2_x) = 1.5;
+	pnoise(F2_y,F2_y) = 1.5;
+	pnoise(F2_z,F2_z) = 1.5;
 
 
 	forceest1.set_process_noise(pnoise);
@@ -211,11 +138,6 @@ int main(int argc, char **argv)
 	measurement_matrix(mv_x,v_x) = 1;
 	measurement_matrix(mv_y,v_y) = 1;
 	measurement_matrix(mv_z,v_z) = 1;
-
-
-	measurement_matrix(momega_x,omega_x) = 1;
-	measurement_matrix(momega_y,omega_y) = 1;
-	measurement_matrix(momega_z,omega_z) = 1;
 
 	measurement_matrix(me_x,e_x) = 1;//1,調小，beta會劇烈震盪
 	measurement_matrix(me_y,e_y) = 1;
@@ -243,9 +165,10 @@ int main(int argc, char **argv)
 		std::normal_distribution<double> distz(mean,stddev);
 		forceest1.gausian_noise << distx(generatorx), disty(generatory), distz(generatorz);
 
-		pose.x = drone2_pose.pose.position.x;
+		pose.x = payload_pose.pose.position.x;
 
 		battery_dt = ros::Time::now().toSec() - start_time;
+        /*
 		if(drone2_imu.angular_velocity.x!=0 && drone2_pose.pose.position.x !=0 && drone2_vel.twist.linear.x !=0) {
 
 
@@ -326,6 +249,45 @@ int main(int argc, char **argv)
 			force_pub.publish(force);
 
 		}
+        */
+       forceest1.predict();
+		Eigen::VectorXd measure;
+		measure.setZero(measurementsize);
+
+		measure << payload_pose.pose.position.x, payload_pose.pose.position.y, payload_pose.pose.position.z,
+			     payload_vel.twist.linear.x, payload_vel.twist.linear.y, payload_vel.twist.linear.z;
+			    //measure_ex, measure_ey, measure_ez,
+			    
+
+		forceest1.qk11 = forceest1.qk1;
+
+		forceest1.correct(measure);
+		forceest1.x[e_x] = 0;
+		forceest1.x[e_y] = 0;
+		forceest1.x[e_z] = 0;
+
+
+
+		force1.x = forceest1.x[F1_x];
+		force1.y = forceest1.x[F1_y];
+		force1.z = forceest1.x[F1_z];
+		force1_pub.publish(force1);
+        
+	    force2.x = forceest1.x[F2_x];
+		force2.y = forceest1.x[F2_y];
+		force2.z = forceest1.x[F2_z];
+		force2_pub.publish(force2);
+
+        pose.x = forceest1.x[p_x];
+		pose.y = forceest1.x[p_y];
+		pose.z = forceest1.x[p_z];
+		pose_pub.publish(pose);
+
+        vel.x = forceest1.x[v_x];
+		vel.y = forceest1.x[v_y];
+		vel.z = forceest1.x[v_z];
+		vel_pub.publish(vel);
+
 		loop_rate.sleep();
 		ros::spinOnce();
 
