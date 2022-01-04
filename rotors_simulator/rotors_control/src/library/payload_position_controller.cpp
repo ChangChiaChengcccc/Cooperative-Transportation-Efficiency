@@ -93,9 +93,9 @@ void PayloadPositionController::ComputeQuadStates(Eigen::Vector3d* x1 ,Eigen::Ve
 	float w_pz = odometry_.angular_velocity.z();
 	
 	//Eigen::Vector3d x1,x2,v1,v2,a1,a2;
-	Eigen::Vector3d rp1(phystate.x_q1 - phystate.x_p ,phystate.y_q1 - phystate.y_p ,phystate.z_q1 - phystate.z_p);
+	Eigen::Vector3d rp1(phystate.x_q1 - phystate.x_p ,phystate.y_q1 - phystate.y_p ,phystate.z_q1 - phystate.z_p - phystate.z_offset);
 	//Eigen::Vector3d rp2(phystate.x_q2 - phystate.x_p ,phystate.y_q2 - phystate.y_p ,phystate.z_q2 - phystate.z_p);
-	Eigen::Vector3d rp2(phystate.x_q2 - phystate.x_p ,phystate.y_q2 - phystate.y_p ,phystate.z_q2 - phystate.z_p);
+	Eigen::Vector3d rp2(phystate.x_q2 - phystate.x_p ,phystate.y_q2 - phystate.y_p ,phystate.z_q2 - phystate.z_p - phystate.z_offset);
 	Eigen::Vector3d xp(px, py, pz);
 	Eigen::Vector3d vp(v_px, v_py, v_pz);
 	Eigen::Vector3d wp(w_px, w_py, w_pz);
@@ -106,10 +106,10 @@ void PayloadPositionController::ComputeQuadStates(Eigen::Vector3d* x1 ,Eigen::Ve
 	*v2 = vp + wp.cross(rp2);
 	//*a1 = vp + ap.cross(rp1) + wp.cross(wp.cross(rp1));
 	//*a2 = vp + ap.cross(rp2) + wp.cross(wp.cross(rp2));
-	std::cout << "------- x1_quads-------" <<std::endl<< * x1 <<std::endl;
-	std::cout << "------- x2_quads-------" <<std::endl<< * x2 <<std::endl;
-	std::cout << "------- v1_quads-------" <<std::endl<< * v1 <<std::endl;
-	std::cout << "------- v2_quads-------" <<std::endl<< * v2 <<std::endl;
+	//std::cout << "------- x1_quads-------" <<std::endl<< * x1 <<std::endl;
+	//std::cout << "------- x2_quads-------" <<std::endl<< * x2 <<std::endl;
+	//std::cout << "------- v1_quads-------" <<std::endl<< * v1 <<std::endl;
+	//std::cout << "------- v2_quads-------" <<std::endl<< * v2 <<std::endl;
 	//* a_quads = v_p + .cross(r_p) + w_p.cross(w_p.cross(r_p));
 }
 
