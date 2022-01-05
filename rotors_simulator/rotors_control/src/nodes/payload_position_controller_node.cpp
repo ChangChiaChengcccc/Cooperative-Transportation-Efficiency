@@ -26,6 +26,11 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 	odometry_sub_ = nh_.subscribe("/payload/odometry", 1,
 	                              &PayloadPositionControllerNode::OdometryCallback, this);
 
+	ft_sensor1_sub_ = nh_.subscribe("/payload_joint1_ft_sensor", 1,
+	                              &PayloadPositionControllerNode::FTsensor1Callback, this);
+	ft_sensor2_sub_ = nh_.subscribe("/payload_joint2_ft_sensor", 1,
+	                              &PayloadPositionControllerNode::FTsensor2Callback, this);			
+
 	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/system/error", 1);
 
 	iris1_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris1_control_input", 1);
@@ -184,7 +189,14 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	iris2_control_input_pub_.publish(iris2_control_input);
 	System_Error_rqt_pub_.publish(msg);
 }
-
+void PayloadPositionControllerNode::FTsensor1Callback(const geometry_msgs::WrenchStampedConstPtr& ft1_msg)
+{
+	payload_position_controller_.SetFTsensor1(ft1_msg);
+}
+void PayloadPositionControllerNode::FTsensor2Callback(const geometry_msgs::WrenchStampedConstPtr& ft2_msg)
+{
+	payload_position_controller_.SetFTsensor2(ft2_msg);
+}
 void PayloadPositionControllerNode::Setmsg(Eigen::Vector3d tmp2){
 	std::vector<double> vec1 = {tmp2(0),tmp2(1),tmp2(2)};
 	/*
