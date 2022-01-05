@@ -104,6 +104,33 @@ void PayloadPositionController::ComputeQuadStates(Eigen::Vector3d* x1 ,Eigen::Ve
 	*x2 = xp + rp2;
 	*v1 = vp + wp.cross(rp1);
 	*v2 = vp + wp.cross(rp2);
+
+	Eigen::Matrix3d R = odometry_.orientation.toRotationMatrix();
+	Eigen::Matrix3d d_matrix1 , d_matrix2;
+	d_matrix1.setZero(3,3);
+	d_matrix2.setZero(3,3);
+	PhysicsParameters phy;
+	Eigen::Matrix3d Jp;
+	d_matrix1 << 0,    0,     0,
+							0,    0, -0.6,
+							0, 0.6,     0;
+	d_matrix2 << 0,     0,    0,
+							0,     0, 0.6,
+							0, -0.6,    0;			
+
+	Jp <<  phy.Ixx_p,0,0,
+				0,phy.Iyy_p,0,
+				0,0,phy.Izz_p;
+	/*
+	std::cout << " -------Jp*w_dot_p------"<<std::endl;
+	std::cout <<(d_matrix1 * R.inverse() * F1 + d_matrix2 * R.inverse() * F2) + T1 + T2 - wp.cross(Jp*wp)<<std::endl;
+	*/
+	// Mp term
+	/*
+	std::cout << " -------Mp------"<<std::endl;
+	std::cout<<d_matrix1 * R.inverse() * F1 + d_matrix2 * R.inverse() * F2 <<std::endl;
+	*/
+
 	//*a1 = vp + ap.cross(rp1) + wp.cross(wp.cross(rp1));
 	//*a2 = vp + ap.cross(rp2) + wp.cross(wp.cross(rp2));
 	//std::cout << "------- x1_quads-------" <<std::endl<< * x1 <<std::endl;
@@ -152,10 +179,10 @@ void PayloadPositionController::ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vec
 	//std::cout << "-------------Desired control input-------"<<std::endl;
 	//std::cout << *desired_control_input <<std::endl;
 	//std::cout << "-------------USTAR-------------"<<std::endl;
-	//std::cout << *u_star <<std::endl;
+	//std::cout << (*u_star)(0,0) <<std::endl;
+	//std::cout << (*u_star)(4,0) <<std::endl;
 	//std::cout << "-------------A*u_star-----------" <<std::endl;
 	//std::cout << A*(*u_star) <<std::endl;
-	
 }
 
 
@@ -164,6 +191,20 @@ void PayloadPositionController::SetOdometry(const EigenOdometry& odometry)
 	PhysicsParameters phy;
 	odometry_ = odometry;
 	odometry_.position.z() = odometry_.position.z()+phy.z_offset;
+}
+void PayloadPositionController::SetFTsensor1(const geometry_msgs::WrenchStampedConstPtr &ft1_msg)
+{
+	F1 << ft1_msg->wrench.force.x,ft1_msg->wrench.force.y,ft1_msg->wrench.force.z;
+	//std::cout << "-----F1----"<< std::endl<< F1 << std::endl;
+	T1 << ft1_msg->wrench.torque.x, ft1_msg->wrench.torque.y , ft1_msg->wrench.torque.z;
+	//std::cout << "-----T1----"<< std::endl<< T1 << std::endl;
+}
+void PayloadPositionController::SetFTsensor2(const geometry_msgs::WrenchStampedConstPtr & ft2_msg)
+{
+	F2 << ft2_msg->wrench.force.x,ft2_msg->wrench.force.y,ft2_msg->wrench.force.z;
+	//std::cout << "-----F2----"<< std::endl<< F2 << std::endl;
+	T2 << ft2_msg->wrench.torque.x, ft2_msg->wrench.torque.y , ft2_msg->wrench.torque.z;
+	//std::cout << "-----T2----"<< std::endl<< T2 << std::endl;
 }
 
 void PayloadPositionController::SetTrajectoryPoint(const mav_msgs::EigenTrajectoryPoint& command_trajectory)
@@ -231,7 +272,7 @@ void PayloadPositionController::ComputeDesiredMoment(const Eigen::Vector3d& forc
 
 	// quaternion -> rotation matrix
 	Eigen::Matrix3d R = odometry_.orientation.toRotationMatrix();
-
+	//std::cout << "------------------R---------------"<<std::endl << R<<std::endl;
 	// Get the desired rotation matrix.
 	// b_1_d is the time derivative of desired trajectory
 	Eigen::Vector3d b1_des;

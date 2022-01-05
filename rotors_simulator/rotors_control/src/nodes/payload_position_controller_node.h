@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <mav_msgs/Actuators.h>
 #include <mav_msgs/AttitudeThrust.h>
 #include <mav_msgs/eigen_mav_msgs.h>
@@ -43,6 +44,8 @@ private:
 	ros::Subscriber cmd_multi_dof_joint_trajectory_sub_;
 	ros::Subscriber cmd_sub_;
 	ros::Subscriber odometry_sub_;
+	ros::Subscriber ft_sensor1_sub_;
+	ros::Subscriber ft_sensor2_sub_;
 
 	ros::Publisher motor_velocity_reference_pub_;
 	ros::Publisher position_error_pub_;
@@ -68,6 +71,9 @@ private:
 	        const trajectory_msgs::MultiDOFJointTrajectoryPointConstPtr& cmd_msg);
 
 	void OdometryCallback(const nav_msgs::OdometryConstPtr& odometry_msg);
+
+	void FTsensor1Callback(const geometry_msgs::WrenchStampedConstPtr& ft1_msg);
+	void FTsensor2Callback(const geometry_msgs::WrenchStampedConstPtr& ft2_msg);
 
 	void Setmsg(Eigen::Vector3d tmp2);
 };

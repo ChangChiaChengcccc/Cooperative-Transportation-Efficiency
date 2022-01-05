@@ -4,6 +4,7 @@
 
 #include <mav_msgs/conversions.h>
 #include <mav_msgs/eigen_mav_msgs.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <list>
 #include <ctime>
 #include <cstdlib>
@@ -66,11 +67,20 @@ static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 80, 0.15)
 static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 15, 0.18);  // 0.52, 0.52, 0.025
 */
 // the key is tuning  Kpos and katt 22 80
-static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(15, 15, 6);              // 16, 16, 16
-static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(4.7, 4.7, 4.7);        // 14.7, 14.7, 14.7
-static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 35, 0.15);           // 2, 1.5, 0.035
-static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 5, 0.18);  // 0.52, 0.52, 0.025
 
+///Good Gain Error <1
+/*
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(18, 18, 6);              // 15,15,6
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(5, 5, 4.7);        // 4.7, 4.7, 4.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3, 40, 0.3);           // 3, 35, 0.15
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 6, 0.18);  // 0.52, 5, 0.18
+*/
+
+// Error <1
+static const Eigen::Vector3d kDefaultPositionGain = Eigen::Vector3d(22, 22, 6);              // 15,15,6
+static const Eigen::Vector3d kDefaultVelocityGain = Eigen::Vector3d(5, 5, 4.7);        // 4.7, 4.7, 4.7
+static const Eigen::Vector3d kDefaultAttitudeGain = Eigen::Vector3d(3.2, 48, 0.3);           // 3, 35, 0.15
+static const Eigen::Vector3d kDefaultAngularRateGain = Eigen::Vector3d(0.52, 7.5, 0.18);  // 0.52, 5, 0.18
 
 class PayloadPositionControllerParameters
 {
@@ -102,6 +112,8 @@ public:
 	void ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vector4d* desired_control_input);
 	void ComputeQuadStates(Eigen::Vector3d* x1 ,Eigen::Vector3d* x2 ,Eigen::Vector3d* v1,Eigen::Vector3d* v2);
 	void SetOdometry(const EigenOdometry& odometry);
+	void SetFTsensor1(const geometry_msgs::WrenchStampedConstPtr &ft1_msg);
+	void SetFTsensor2(const geometry_msgs::WrenchStampedConstPtr &ft2_msg);
 	void SetTrajectoryPoint(const mav_msgs::EigenTrajectoryPoint& command_trajectory);
 	
 
@@ -123,6 +135,11 @@ public:
 
 	mav_msgs::EigenTrajectoryPoint command_trajectory_;
 	EigenOdometry odometry_;
+
+	Eigen::Vector3d F1;
+	Eigen::Vector3d F2;
+	Eigen::Vector3d T1;
+	Eigen::Vector3d T2;
 
 	void ComputeDesiredForce(Eigen::Vector3d* force_control_input);
 	void ComputeDesiredMoment(const Eigen::Vector3d& force_control_input, Eigen::Vector3d* moment_control_input);
