@@ -3,26 +3,44 @@
 import rospy
 from ukf import UKF
 import numpy as np
-#from math import sin,cos,sqrt,atan2
 import math
 from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float64MultiArray
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import WrenchStamped
 from pyquaternion import Quaternion
 
-
-sensor_data = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+#time variables
 time_last = 0 
 dt = 0.0
+
+#state variables
+state_dim = 12
 rpy_tmp = np.array([0.0, 0.0, 0.0])
 d_rpy = np.array([0.0, 0.0, 0.0])
-measurement_noise = np.array([0.0,0.0,0.0,0.0,0.0,0.0])
 rpy = 0.0,0.0,0.0 #tuple
+
+#measurement variables
+measurement_dim = 6
+measurement_noise = np.zeros(6)
+sensor_data = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+initial_state = np.array([0, 0, 1.3, 0, 0, 0, # x,v
+                          0, 0, 0, 0, 0, 0]) # O,w
+
+#process parameters
+thrust_moment = np.array([0.0,0.0,0.0,0.0])
+R = np.zeros((3,3))
+F = np.zeros(3)
+e3 = np.array([0.0,0.0,1])
+
+#for publish variables
 estimate_state_list = Float64MultiArray()
 rpy_list = Float64MultiArray()
 debug_list = Float64MultiArray()
-state_dim = 12
-measurement_dim = 6
+
+# parameters
+m = 1.55
+J = np.array([[0.03, 0, 0], [0, 0.05, 0], [0, 0, 0.1]])
 
 # Process Noise
 q = np.eye(state_dim)
@@ -30,48 +48,49 @@ q = np.eye(state_dim)
 q[0][0] = 0.0001 
 q[1][1] = 0.0001
 q[2][2] = 0.0001
-q[3][3] = 0.5
-q[4][4] = 0.5
-q[5][5] = 0.5
+q[3][3] = 0.1
+q[4][4] = 0.0001
+q[5][5] = 0.0001
 # O,w
 q[6][6] = 0.0001 
 q[7][7] = 0.0001
 q[8][8] = 0.0001
-q[9][9] = 50
-q[10][10] = 300
-q[11][11] = 6
+q[9][9] = 0.0001
+q[10][10] = 0.0001
+q[11][11] = 0.0001
 
 # create measurement noise covariance matrices
 p_yy_noise = np.eye(measurement_dim)
-p_yy_noise[0][0] = 0.001
-p_yy_noise[1][1] = 0.001
-p_yy_noise[2][2] = 0.001
+p_yy_noise[0][0] = 0.0001
+p_yy_noise[1][1] = 0.0001
+p_yy_noise[2][2] = 0.0001
 p_yy_noise[3][3] = 0.0001
 p_yy_noise[4][4] = 0.0001
-p_yy_noise[5][5] = 0.001
-
-# create initial state
-initial_state = np.array([0, 0, 1.3, 0, 0, 0, # x,v
-                          0, 0, 0, 0, 0, 0]) # O,w
-
+p_yy_noise[5][5] = 0.0001
 
 def iterate_x(x, timestep):
     '''this function is based on the x_dot and can be nonlinear as needed'''
+    global thrust_moment,R,m,F,e3
     ret = np.zeros(len(x))
+    # dynamics
+    a = thrust_moment[0]*np.dot(R,e3)/m - 9.81*e3 - F/m
+    w = np.array([x[9],x[10],x[11]])
+    w_dot = np.dot(np.linalg.inv(J),(thrust_moment[1:4]- np.cross(w,np.dot(J,w)) - thrust_moment[1:4]))
+    #print(a)
     # x,v
     ret[0] = x[0] + x[3] * timestep
     ret[1] = x[1] + x[4] * timestep
     ret[2] = x[2] + x[5] * timestep
-    ret[3] = x[3] 
-    ret[4] = x[4] 
-    ret[5] = x[5] 
+    ret[3] = x[3] + a[0] * timestep
+    ret[4] = x[4] #+ a[1] * timestep
+    ret[5] = x[5] #+ a[2] * timestep
     # O,w
-    ret[6] = x[6] + x[9] * timestep
-    ret[7] = x[7] + x[10] * timestep
-    ret[8] = x[8] + x[11] * timestep
-    ret[9] = x[9] 
-    ret[10] = x[10] 
-    ret[11] = x[11] 
+    ret[6] = x[6]   + x[9]  * timestep
+    ret[7] = x[7]   + x[10] * timestep
+    ret[8] = x[8]   + x[11] * timestep
+    ret[9] = x[9]   #+ w_dot[0] * timestep
+    ret[10] = x[10] #+ w_dot[1] * timestep
+    ret[11] = x[11] #+ w_dot[2] * timestep
     return ret
 
 def measurement_model(x):
@@ -91,19 +110,24 @@ def measurement_model(x):
 def pos_rpy_cb(data):
     # pass the subscribed data
     global sensor_data    
-    global rpy,rpy_tmp,d_rpy
+    global rpy,R
 
-    test = Quaternion(data.pose.pose.orientation.w, data.pose.pose.orientation.x, 
+    quaternion = Quaternion(data.pose.pose.orientation.w, data.pose.pose.orientation.x, 
                       data.pose.pose.orientation.y, data.pose.pose.orientation.z)
-    rpy = [test.yaw_pitch_roll[2], test.yaw_pitch_roll[1], test.yaw_pitch_roll[0]]
+    rpy = [quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]]
 
     sensor_data =  np.array([data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.position.z,
-                             test.yaw_pitch_roll[2], test.yaw_pitch_roll[1], test.yaw_pitch_roll[0]])
-    # derivative refernce 
-    #d_rpy = (np.array([rpy[0], rpy[1], rpy[2]]) - rpy_tmp)/dt
-    #print(d_rpy)
-    #rpy_tmp = np.array([rpy[0], rpy[1], rpy[2]])
+                             quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]])
+    R = quaternion.rotation_matrix
 
+def thrust_moment_cb(data):
+    global thrust_moment
+    thrust_moment = np.array([data.pose.pose.orientation.w, data.pose.pose.orientation.x, 
+                              data.pose.pose.orientation.y, data.pose.pose.orientation.z])
+
+def ft_cb(data):
+    global F
+    F = np.array([data.wrench.force.x, data.wrench.force.y, data.wrench.force.z])
 
 def add_sensor_noise(sensor_data):
     sensor_data[0:3] += np.random.normal(0,0.002,3)
@@ -125,6 +149,8 @@ if __name__ == "__main__":
         rpy_pub = rospy.Publisher("/payload/rpy", Float64MultiArray, queue_size=10)
         #debug_pub = rospy.Publisher("/payload/debug", Float64MultiArray, queue_size=10)
         rospy.Subscriber("/payload/odometry", Odometry, pos_rpy_cb, queue_size=10)
+        rospy.Subscriber("/iris1_control_input", Odometry, thrust_moment_cb, queue_size=10)
+        rospy.Subscriber("/payload_joint1_ft_sensor", WrenchStamped, ft_cb, queue_size=10)
         add_sensor_noise(sensor_data)
 
         # pass all the parameters into the UKF!
