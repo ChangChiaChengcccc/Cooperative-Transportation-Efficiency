@@ -30,11 +30,13 @@ initial_state = np.array([0.6, 0, 1.3, 0, 0, 0, # x,v
 
 #process parameters
 thrust_moment = np.array([0.0,0.0,0.0,0.0])
-R = np.zeros((3,3))
+R_iris1 = np.zeros((3,3))
+R_imu = np.zeros((3,3))
 F = np.zeros(3)
 tau = np.zeros(3)
 imu_acc = np.zeros(3)
 imu_acc_tmp = np.zeros(3)
+acc = np.zeros(3)
 e3 = np.array([0.0,0.0,1])
 
 #for publish variables
@@ -52,16 +54,16 @@ q = np.eye(state_dim)
 q[0][0] = 0.0001 
 q[1][1] = 0.0001
 q[2][2] = 0.0001
-q[3][3] = 0.0001
-q[4][4] = 0.0001
-q[5][5] = 0.0001
+q[3][3] = 0.1
+q[4][4] = 0.001
+q[5][5] = 0.001
 # O,w
 q[6][6] = 0.0001 
 q[7][7] = 0.0001
 q[8][8] = 0.0001
-q[9][9] = 0.0001
-q[10][10] = 0.0001
-q[11][11] = 0.0001
+q[9][9] = 0.001
+q[10][10] = 0.001
+q[11][11] = 0.001
 
 # create measurement noise covariance matrices
 p_yy_noise = np.eye(measurement_dim)
@@ -74,20 +76,21 @@ p_yy_noise[5][5] = 0.0001
 
 def iterate_x(x, timestep):
     '''this function is based on the x_dot and can be nonlinear as needed'''
-    global thrust_moment,R,m,F,e3,imu_acc
+    global thrust_moment,R_iris1,R_imu,m,F,e3,imu_acc,acc
     ret = np.zeros(len(x))
     # dynamics
-    a = thrust_moment[0]*np.dot(R,e3)/m - 9.81*e3 - F/m
+    a = thrust_moment[0]*np.dot(R_iris1,e3)/m - 9.81*e3 - F/m
     w = np.array([x[9],x[10],x[11]])
     w_dot = np.dot(np.linalg.inv(J),(thrust_moment[1:4]- np.cross(w,np.dot(J,w)) - tau))
-    #print(a)
+    acc = np.dot(R_imu,imu_acc)
+    #print(acc)
     # x,v
     ret[0] = x[0] + x[3] * timestep
     ret[1] = x[1] + x[4] * timestep
     ret[2] = x[2] + x[5] * timestep
-    ret[3] = x[3] + imu_acc[0] * timestep#+ a[0] * timestep
-    ret[4] = x[4] #+ a[1] * timestep
-    ret[5] = x[5] #+ a[2] * timestep
+    ret[3] = x[3] + a[0] * timestep #+ a[0] * timestep
+    ret[4] = x[4] #+ imu_acc[1] * timestep#+ a[1] * timestep
+    ret[5] = x[5] #+ imu_acc[2] * timestep#+ a[2] * timestep
     # O,w
     ret[6] = x[6]   + x[9]  * timestep
     ret[7] = x[7]   + x[10] * timestep
@@ -114,7 +117,7 @@ def measurement_model(x):
 def pos_rpy_cb(data):
     # pass the subscribed data
     global sensor_data    
-    global rpy,R
+    global rpy,R_iris1
 
     quaternion = Quaternion(data.pose.pose.orientation.w, data.pose.pose.orientation.x, 
                       data.pose.pose.orientation.y, data.pose.pose.orientation.z)
@@ -122,7 +125,7 @@ def pos_rpy_cb(data):
 
     sensor_data =  np.array([data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.position.z,
                              quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]])
-    R = quaternion.rotation_matrix
+    R_iris1 = quaternion.rotation_matrix
 
 def thrust_moment_cb(data):
     global thrust_moment
@@ -135,10 +138,14 @@ def ft_cb(data):
     tau = np.array([data.wrench.torque.x, data.wrench.torque.y, data.wrench.torque.z])
 
 def imu_cb(data):
-    global imu_acc,imu_acc_tmp
+    global imu_acc,imu_acc_tmp,R_imu
     imu_acc = np.array([data.linear_acceleration.x, data.linear_acceleration.y, data.linear_acceleration.z])
     imu_acc = 0.97*imu_acc_tmp + 0.03*imu_acc  
     imu_acc_tmp = imu_acc
+
+    quaternion = Quaternion(data.orientation.w, data.orientation.x, 
+                            data.orientation.y, data.orientation.z)
+    R_imu = quaternion.rotation_matrix
 
 def add_sensor_noise(sensor_data):
     sensor_data[0:3] += np.random.normal(0,0.002,3)
@@ -158,7 +165,7 @@ if __name__ == "__main__":
         rospy.init_node('UKF')
         state_pub = rospy.Publisher("/estimated_state", Float64MultiArray, queue_size=10)
         rpy_pub = rospy.Publisher("/iris1/rpy", Float64MultiArray, queue_size=10)
-        #debug_pub = rospy.Publisher("/payload/debug", Float64MultiArray, queue_size=10)
+        debug_pub = rospy.Publisher("/debug", Float64MultiArray, queue_size=10)
         rospy.Subscriber("/iris1/ground_truth/odometry", Odometry, pos_rpy_cb, queue_size=10)
         rospy.Subscriber("/iris1_control_input", Odometry, thrust_moment_cb, queue_size=10)
         rospy.Subscriber("/payload_joint1_ft_sensor", WrenchStamped, ft_cb, queue_size=10)
@@ -179,8 +186,8 @@ if __name__ == "__main__":
             rpy_list.data = list(rpy)
             rpy_pub.publish(rpy_list)
 
-            #debug_list.data = list(d_rpy)
-            #debug_pub.publish(debug_list)
+            debug_list.data = list(acc)
+            debug_pub.publish(debug_list)
             #print(ukf_module.get_covar())
 
             rate.sleep()
