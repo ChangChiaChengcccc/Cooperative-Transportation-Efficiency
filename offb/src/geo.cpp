@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	std::vector<trajectory_profile> data;
 	double sample = 0.003;
 
-    p1.pos << 0, 0, 1.3;
+	    p1.pos << 0, 0, 1.3;
 	p1.vel<< 0, 0, 0;
 	p1.acc<< 0, 0, 0;
 	p1.yaw = 0;
@@ -111,6 +111,7 @@ int main(int argc, char **argv)
 	path.push_back(segments(p5, p6, 4));
 	path.push_back(segments(p6, p7, 4));
 	path.push_back(segments(p7, p8, 4));
+
 	
 	data = plan.get_profile(path, path.size(), sample);
 

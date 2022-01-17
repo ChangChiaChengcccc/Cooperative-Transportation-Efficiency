@@ -55,8 +55,8 @@ class UKF:
         tmp_mat = (self.n_dim + self.lambd)*self.p
 
         # print spr_mat
-        #spr_mat = scipy.linalg.sqrtm(tmp_mat)
-        spr_mat = np.linalg.cholesky(tmp_mat)
+        spr_mat = scipy.linalg.sqrtm(tmp_mat)
+        #spr_mat = np.linalg.cholesky(tmp_mat)
 
         ret[0] = self.x
         for i in range(self.n_dim):
@@ -107,7 +107,7 @@ class UKF:
             p_xy += self.covar_weights[i] * val[1].dot(val[0].T)
 
         k = np.dot(p_xy, np.linalg.inv(p_yy))
-
+        #print(k)
         y_actual = data
 
         self.x += np.dot(k, (y_actual - y_mean))

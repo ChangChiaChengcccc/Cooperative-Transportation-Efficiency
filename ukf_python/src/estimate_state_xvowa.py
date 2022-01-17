@@ -16,17 +16,17 @@ time_last = 0
 dt = 0.025
 
 #state variables
-state_dim = 12
+state_dim = 15
 rpy_tmp = np.array([0.0, 0.0, 0.0])
 d_rpy = np.array([0.0, 0.0, 0.0])
 rpy = 0.0,0.0,0.0 #tuple
 
 #measurement variables
-measurement_dim = 6
-measurement_noise = np.zeros(6)
-sensor_data = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+measurement_dim = 9
+measurement_noise = np.zeros(9)
+sensor_data = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 initial_state = np.array([0.6, 0, 1.3, 0, 0, 0, # x,v
-                          0, 0, 0, 0, 0, 0]) # O,w
+                          0, 0, 0, 0, 0, 0, 0, 0, 0]) # O,w,a
 
 #process parameters
 thrust_moment = np.array([0.0,0.0,0.0,0.0])
@@ -65,6 +65,10 @@ q[8][8] = 0.0001
 q[9][9] = 0.001
 q[10][10] = 0.001
 q[11][11] = 0.001
+# a
+q[12][12] = 0.001
+q[13][13] = 0.001
+q[14][14] = 0.001
 
 # create measurement noise covariance matrices
 p_yy_noise = np.eye(measurement_dim)
@@ -74,6 +78,9 @@ p_yy_noise[2][2] = 0.001
 p_yy_noise[3][3] = 0.001
 p_yy_noise[4][4] = 0.001
 p_yy_noise[5][5] = 0.001
+p_yy_noise[6][6] = 0.001
+p_yy_noise[7][7] = 0.001
+p_yy_noise[8][8] = 0.001
 
 def iterate_x(x, timestep):
     '''this function is based on the x_dot and can be nonlinear as needed'''
@@ -88,12 +95,12 @@ def iterate_x(x, timestep):
 
     #print(acc)
     # x,v
-    ret[0] = x[0] + x[3] * timestep #+ 0.5*x[12]*timestep*timestep
-    ret[1] = x[1] + x[4] * timestep #+ 0.5*x[13]*timestep*timestep
-    ret[2] = x[2] + x[5] * timestep #+ 0.5*x[14]*timestep*timestep
-    ret[3] = x[3] + a[0] * timestep#+ acc[0] * timestep #+ x[12] * timestep#
-    ret[4] = x[4] + a[1] * timestep#+ acc[1] * timestep #+ x[13] * timestep#
-    ret[5] = x[5] + a[2] * timestep#+(acc[2]-9.81) * timestep #+ (x[14]-9.81) * timestep#
+    ret[0] = x[0] + x[3] * timestep + 0.5*x[12]*timestep*timestep
+    ret[1] = x[1] + x[4] * timestep + 0.5*x[13]*timestep*timestep
+    ret[2] = x[2] + x[5] * timestep + 0.5*x[14]*timestep*timestep
+    ret[3] = x[3] + x[12] * timestep#+ acc[0] * timestep #+ a[0] * timestep#
+    ret[4] = x[4] + x[13] * timestep#+ acc[1] * timestep #+ a[1] * timestep#
+    ret[5] = x[5] + (x[14]-9.81) * timestep#+(acc[2]-9.81) * timestep #+ a[2] * timestep#
     #print(ret[3:6])
     #print(timestep)
     # O,w
@@ -103,6 +110,10 @@ def iterate_x(x, timestep):
     ret[9] = x[9]   #+ w_dot[0] * timestep
     ret[10] = x[10] #+ w_dot[1] * timestep
     ret[11] = x[11] #+ w_dot[2] * timestep
+    # a
+    ret[12] = x[12]
+    ret[13] = x[13]
+    ret[14] = x[14]
     return ret
 
 def measurement_model(x):
@@ -118,6 +129,9 @@ def measurement_model(x):
     ret[3] = x[6]
     ret[4] = x[7]
     ret[5] = x[8]
+    ret[6] = x[12]
+    ret[7] = x[13]
+    ret[8] = x[14]
     return ret
 
 def pos_rpy_cb(data):
@@ -129,7 +143,7 @@ def pos_rpy_cb(data):
                       data.pose.pose.orientation.y, data.pose.pose.orientation.z)
     rpy = [quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]]
 
-    sensor_data =  np.array([data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.position.z,
+    sensor_data[0:6] =  np.array([data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.position.z,
                              quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]])
     R_iris1 = quaternion.rotation_matrix
 
@@ -152,9 +166,9 @@ def imu_cb(data):
                             data.orientation.y, data.orientation.z)
     R_imu = quaternion.rotation_matrix
 
-    #sensor_data= np.dot(R_imu,acc_imu)
+    sensor_data[6:9]= np.dot(R_imu,acc_imu)
 
-def add_sensor_noise(sensor_data): # call by value
+def add_sensor_noise(sensor_data):
     sensor_data[0:3] += np.random.normal(0,0.002,3)
     sensor_data[3:6] += np.random.normal(0,0.017,3)
 
@@ -164,7 +178,6 @@ def ukf():
     #print(dt)
     #dt = rospy.Time.now().to_sec() - time_last
     ukf_module.predict(dt)
-    #print(sensor_data)
     ukf_module.update(measurement_dim, sensor_data, p_yy_noise)
     time_last = rospy.Time.now().to_sec()
 
