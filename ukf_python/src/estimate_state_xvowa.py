@@ -87,7 +87,7 @@ def iterate_x(x, timestep):
     global thrust_moment,R_iris1,R_imu,m,F,e3,acc_imu,acc,debug_tmp
     ret = np.zeros(len(x))
     # dynamics
-    a = thrust_moment[0]*np.dot(R_iris1,e3)/m - 9.81*e3 - F/m
+    a = thrust_moment[0]*np.dot(R_iris1,e3)/m  - F/m #- 9.81*e3
     debug_tmp = a
     w = np.array([x[9],x[10],x[11]])
     w_dot = np.dot(np.linalg.inv(J),(thrust_moment[1:4]- np.cross(w,np.dot(J,w)) - tau))
@@ -95,9 +95,9 @@ def iterate_x(x, timestep):
 
     #print(acc)
     # x,v
-    ret[0] = x[0] + x[3] * timestep + 0.5*x[12]*timestep*timestep
-    ret[1] = x[1] + x[4] * timestep + 0.5*x[13]*timestep*timestep
-    ret[2] = x[2] + x[5] * timestep + 0.5*x[14]*timestep*timestep
+    ret[0] = x[0] + x[3] * timestep #+ 0.5*x[12]*timestep*timestep
+    ret[1] = x[1] + x[4] * timestep #+ 0.5*x[13]*timestep*timestep
+    ret[2] = x[2] + x[5] * timestep #+ 0.5*x[14]*timestep*timestep
     ret[3] = x[3] + x[12] * timestep#+ acc[0] * timestep #+ a[0] * timestep#
     ret[4] = x[4] + x[13] * timestep#+ acc[1] * timestep #+ a[1] * timestep#
     ret[5] = x[5] + (x[14]-9.81) * timestep#+(acc[2]-9.81) * timestep #+ a[2] * timestep#
@@ -105,7 +105,7 @@ def iterate_x(x, timestep):
     #print(timestep)
     # O,w
     ret[6] = x[6]   + x[9]  * timestep
-    ret[7] = x[7]   + x[10] * timestep
+    ret[7] = x[7]   + x[10] * timestep  
     ret[8] = x[8]   + x[11] * timestep
     ret[9] = x[9]   #+ w_dot[0] * timestep
     ret[10] = x[10] #+ w_dot[1] * timestep
@@ -114,6 +114,8 @@ def iterate_x(x, timestep):
     ret[12] = x[12]
     ret[13] = x[13]
     ret[14] = x[14]
+    # debug tmp
+    
     return ret
 
 def measurement_model(x):
@@ -208,8 +210,8 @@ if __name__ == "__main__":
             rpy_list.data = list(rpy)
             rpy_pub.publish(rpy_list)
 
-            debug_list.data = list(acc)
-            debug_pub.publish(debug_list)
+            debug_list.data = list(debug_tmp)
+            #debug_pub.publish(debug_list)
             #print(ukf_module.get_covar())
 
             rate.sleep()
