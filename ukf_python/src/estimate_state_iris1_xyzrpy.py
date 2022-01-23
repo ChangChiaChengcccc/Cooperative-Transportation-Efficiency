@@ -2,7 +2,6 @@
 
 import rospy
 from ukf import UKF
-from common_tool import eulerAnglesToRotationMatrix
 import numpy as np
 import math
 from gazebo_msgs.msg import ModelStates
@@ -10,7 +9,6 @@ from std_msgs.msg import Float64MultiArray
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import WrenchStamped
 from sensor_msgs.msg import Imu
-from mav_msgs.msg import Actuators
 from pyquaternion import Quaternion
 
 #time variables
@@ -18,7 +16,7 @@ time_last = 0
 dt = 0.025
 
 #state variables
-state_dim = 22
+state_dim = 18
 initial_state = np.zeros(state_dim)
 rpy_tmp = np.zeros(3)
 d_rpy = np.zeros(3)
@@ -40,7 +38,6 @@ acc_imu_tmp = np.zeros(3)
 acc = np.zeros(3)
 e3 = np.array([0.0,0.0,1])
 get_estimate_state = np.zeros(3)
-f_vector = np.zeros(4)
 
 #for publish variables
 estimate_state_list = Float64MultiArray()
@@ -52,23 +49,15 @@ debug_tmp = np.zeros(3)
 m = 1.55
 J = np.array([[0.03, 0, 0], [0, 0.05, 0], [0, 0, 0.1]])
 
-# allocation matrix how to check
-allo_mat = np.array([
-                     [1,   1,   1,   1],
-                     [-0.255539*math.sin(1.0371),0.238537*math.sin(0.99439),0.255539*math.sin(1.0371),-0.238537*math.sin(0.99439)],
-                     [-0.255539*math.cos(1.0371),0.238537*math.cos(0.99439),0.255539*math.cos(1.0371),-0.238537*math.cos(0.99439)],
-                     [-1.6e-2,   -1.6e-2,   1.6e-2,   1.6e-2]    
-                     ])
-
 # Process Noise
 q = np.eye(state_dim)
 # x,v,a
 q[0][0] = 0.0001
 q[1][1] = 0.0001
 q[2][2] = 0.0001
-q[3][3] = 0.001
-q[4][4] = 0.0001
-q[5][5] = 0.001
+q[3][3] = 0.01
+q[4][4] = 0.01
+q[5][5] = 0.01
 q[6][6] = 0.5
 q[7][7] = 0.5
 q[8][8] = 0.5
@@ -82,11 +71,6 @@ q[14][14] = 0.1
 q[15][15] = 0.1
 q[16][16] = 0.1
 q[17][17] = 0.1
-# E
-#q[18][18] = 0.0001
-#q[19][19] = 0.0001
-#q[20][20] = 0.0001
-#q[21][21] = 0.0001
 
 
 # create measurement noise covariance matrices
@@ -96,8 +80,8 @@ p_yy_noise[0][0] = 0.0001
 p_yy_noise[1][1] = 0.0001
 p_yy_noise[2][2] = 0.0001
 p_yy_noise[3][3] = 0.1
-p_yy_noise[4][4] = 0.01
-p_yy_noise[5][5] = 0.01
+p_yy_noise[4][4] = 0.1
+p_yy_noise[5][5] = 0.1
 # O,w_dot
 p_yy_noise[6][6] = 0.0001
 p_yy_noise[7][7] = 0.0001
@@ -109,33 +93,17 @@ p_yy_noise[11][11] = 0.5
 
 def iterate_x(x, timestep):
     '''this function is based on the x_dot and can be nonlinear as needed'''
-    global thrust_moment,R_iris1,R_imu,m,F,e3,acc_imu,acc,debug_tmp,f_vector,allo_mat
+    global thrust_moment,R_iris1,R_imu,m,F,e3,acc_imu,acc,debug_tmp
     ret = np.zeros(len(x))
     # dynamics
     a = thrust_moment[0]*np.dot(R_iris1,e3)/m - F/m 
-
-    rpy_state = x[9:12]
-    E_diag = np.diag(x[18:22])
-    #E_diag = np.eye(4)
-    control_input = np.dot(allo_mat,np.dot(E_diag,f_vector))
-    #print(np.dot(eulerAnglesToRotationMatrix(x[9:12]),e3))
-    #print(control_input)
-    a_state = control_input[0]*np.dot(eulerAnglesToRotationMatrix(rpy_state),e3)/m - F/m
-
+    
     w = np.array([x[12],x[13],x[14]])
-
     w_dot = np.dot(np.linalg.inv(J),(thrust_moment[1:4]- np.cross(w,np.dot(J,w)) - tau))
-
-    w_state = x[12:15]
-    w_dot_state = np.dot(np.linalg.inv(J),(control_input[1:4]- np.cross(w_state,np.dot(J,w_state)) - tau))
-
-    #debug_tmp = w_dot
-    acc = np.dot(R_imu,acc_imu)
-    sensor_data[3:6] = acc
+    debug_tmp = w_dot
+    sensor_data[3:6] = a
     sensor_data[9:12] = w_dot
-    
-
-    
+    acc = np.dot(R_imu,acc_imu)
 
     # x,v,a
     ret[0] = x[0] + x[3] * timestep 
@@ -144,9 +112,9 @@ def iterate_x(x, timestep):
     ret[3] = x[3] + x[6] * timestep
     ret[4] = x[4] + x[7] * timestep
     ret[5] = x[5] + (x[8]- 9.77) * timestep
-    ret[6] = a_state[0]
-    ret[7] = a_state[1]  
-    ret[8] = a_state[2]  
+    ret[6] = x[6]    
+    ret[7] = x[7]    
+    ret[8] = x[8]   
 
     # O,w,w_dot
     ret[9] = x[9]    + x[12] * timestep
@@ -155,15 +123,10 @@ def iterate_x(x, timestep):
     ret[12] = x[12]  + x[15] * timestep 
     ret[13] = x[13]  + x[16] * timestep
     ret[14] = x[14]  + x[17] * timestep
-    ret[15] = x[15] #w_dot_state[0]   
-    ret[16] = x[16] #w_dot_state[1]
-    ret[17] = x[17] #w_dot_state[2]
+    ret[15] = x[15]   
+    ret[16] = x[16]
+    ret[17] = x[17]
     
-    # E
-    ret[18] = x[18]
-    ret[19] = x[19]   
-    ret[20] = x[20]
-    ret[21] = x[21]
     return ret
 
 def measurement_model(x):
@@ -190,7 +153,7 @@ def measurement_model(x):
 
 def pos_rpy_cb(data):
     # pass the subscribed data
-    global sensor_data,rpy,R_iris1,debug_tmp
+    global sensor_data,rpy,R_iris1
     quaternion = Quaternion(data.pose.pose.orientation.w, data.pose.pose.orientation.x, 
                       data.pose.pose.orientation.y, data.pose.pose.orientation.z)
     rpy = [quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]]
@@ -198,12 +161,7 @@ def pos_rpy_cb(data):
     sensor_data[0:3] =  np.array([data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.position.z])
     sensor_data[6:9] =  np.array([quaternion.yaw_pitch_roll[2], quaternion.yaw_pitch_roll[1], quaternion.yaw_pitch_roll[0]])
     R_iris1 = quaternion.rotation_matrix
-    debug_tmp = eulerAnglesToRotationMatrix(rpy)
-    #print("R_iris1")
-    #print(R_iris1)
-    #print("test")
-    #print(debug_tmp)
-    
+
 def thrust_moment_cb(data):
     global thrust_moment
     thrust_moment = np.array([data.pose.pose.orientation.w, data.pose.pose.orientation.x, 
@@ -222,19 +180,7 @@ def imu_cb(data):
                             data.orientation.y, data.orientation.z)
     R_imu = quaternion.rotation_matrix
 
-def rotors_cb(data):
-    global f_vector,allo_mat,thrust_moment
-    rotor_force_constant = 8.54848e-6
-    f_vector = np.array([data.angular_velocities[0]*data.angular_velocities[0]*rotor_force_constant,
-                         data.angular_velocities[1]*data.angular_velocities[1]*rotor_force_constant,
-                         data.angular_velocities[2]*data.angular_velocities[2]*rotor_force_constant, 
-                         data.angular_velocities[3]*data.angular_velocities[3]*rotor_force_constant])
-
-    #print("allo_mat*f_vector")
-    #print(np.dot(allo_mat,f_vector))
-    #print("thrust_moment")
-    #print(thrust_moment)
-
+    #sensor_data= np.dot(R_imu,acc_imu)
 
 def debug_cb(data):
     global get_estimate_state
@@ -264,7 +210,6 @@ if __name__ == "__main__":
         rospy.Subscriber("/payload_joint1_ft_sensor", WrenchStamped, ft_cb, queue_size=10)
         rospy.Subscriber("/iris1/ground_truth/imu", Imu, imu_cb, queue_size=10)
         rospy.Subscriber("/estimated_state", Float64MultiArray, debug_cb, queue_size=10)
-        rospy.Subscriber("/iris1/motor_speed", Actuators, rotors_cb, queue_size=10)
         #add_sensor_noise(sensor_data)
 
         # pass all the parameters into the UKF!
@@ -281,7 +226,7 @@ if __name__ == "__main__":
             rpy_list.data = list(rpy)
             rpy_pub.publish(rpy_list)
 
-            debug_list.data = list(acc)
+            debug_list.data = list(debug_tmp)
             debug_pub.publish(debug_list)
             #print(ukf_module.get_covar())
 

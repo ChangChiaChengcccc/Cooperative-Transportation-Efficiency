@@ -80,10 +80,17 @@ void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
 	*/
 	// get moment_thrust from subscribe control input
 	Eigen::Vector4d moment_thrust;
+	
 	moment_thrust(0) = control_input->pose.pose.orientation.x;
 	moment_thrust(1) = control_input->pose.pose.orientation.y;
 	moment_thrust(2) = control_input->pose.pose.orientation.z;
 	moment_thrust(3) = control_input->pose.pose.orientation.w;
+	/*
+	moment_thrust(0) = 0;
+	moment_thrust(1) = 0;
+	moment_thrust(2) = 0.1;
+	moment_thrust(3) = 0;
+	*/
 	//std::cout << "moment_thrust\n" << moment_thrust << std::endl;
 	//std::cout << "moment_thrust_output\n" << moment_thrust << "\n\n";
 

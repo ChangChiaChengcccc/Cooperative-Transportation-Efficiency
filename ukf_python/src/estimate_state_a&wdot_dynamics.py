@@ -18,7 +18,7 @@ time_last = 0
 dt = 0.025
 
 #state variables
-state_dim = 22
+state_dim = 18
 initial_state = np.zeros(state_dim)
 rpy_tmp = np.zeros(3)
 d_rpy = np.zeros(3)
@@ -66,9 +66,9 @@ q = np.eye(state_dim)
 q[0][0] = 0.0001
 q[1][1] = 0.0001
 q[2][2] = 0.0001
-q[3][3] = 0.001
-q[4][4] = 0.0001
-q[5][5] = 0.001
+q[3][3] = 0.01
+q[4][4] = 0.01
+q[5][5] = 0.01
 q[6][6] = 0.5
 q[7][7] = 0.5
 q[8][8] = 0.5
@@ -96,8 +96,8 @@ p_yy_noise[0][0] = 0.0001
 p_yy_noise[1][1] = 0.0001
 p_yy_noise[2][2] = 0.0001
 p_yy_noise[3][3] = 0.1
-p_yy_noise[4][4] = 0.01
-p_yy_noise[5][5] = 0.01
+p_yy_noise[4][4] = 0.1
+p_yy_noise[5][5] = 0.1
 # O,w_dot
 p_yy_noise[6][6] = 0.0001
 p_yy_noise[7][7] = 0.0001
@@ -115,8 +115,8 @@ def iterate_x(x, timestep):
     a = thrust_moment[0]*np.dot(R_iris1,e3)/m - F/m 
 
     rpy_state = x[9:12]
-    E_diag = np.diag(x[18:22])
-    #E_diag = np.eye(4)
+    #E_diag = np.diag(x[18:22])
+    E_diag = np.eye(4)
     control_input = np.dot(allo_mat,np.dot(E_diag,f_vector))
     #print(np.dot(eulerAnglesToRotationMatrix(x[9:12]),e3))
     #print(control_input)
@@ -131,7 +131,7 @@ def iterate_x(x, timestep):
 
     #debug_tmp = w_dot
     acc = np.dot(R_imu,acc_imu)
-    sensor_data[3:6] = acc
+    sensor_data[3:6] = a
     sensor_data[9:12] = w_dot
     
 
@@ -144,9 +144,9 @@ def iterate_x(x, timestep):
     ret[3] = x[3] + x[6] * timestep
     ret[4] = x[4] + x[7] * timestep
     ret[5] = x[5] + (x[8]- 9.77) * timestep
-    ret[6] = a_state[0]
-    ret[7] = a_state[1]  
-    ret[8] = a_state[2]  
+    ret[6] = x[6]
+    ret[7] = x[7]  
+    ret[8] = x[8]  
 
     # O,w,w_dot
     ret[9] = x[9]    + x[12] * timestep
@@ -155,15 +155,15 @@ def iterate_x(x, timestep):
     ret[12] = x[12]  + x[15] * timestep 
     ret[13] = x[13]  + x[16] * timestep
     ret[14] = x[14]  + x[17] * timestep
-    ret[15] = x[15] #w_dot_state[0]   
-    ret[16] = x[16] #w_dot_state[1]
-    ret[17] = x[17] #w_dot_state[2]
+    ret[15] = x[15]   
+    ret[16] = x[16]
+    ret[17] = x[17]
     
     # E
-    ret[18] = x[18]
-    ret[19] = x[19]   
-    ret[20] = x[20]
-    ret[21] = x[21]
+    #ret[18] = x[18]
+    #ret[19] = x[19]   
+    #ret[20] = x[20]
+    #ret[21] = x[21]
     return ret
 
 def measurement_model(x):
