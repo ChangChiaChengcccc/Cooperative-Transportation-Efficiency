@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	std::vector<trajectory_profile> data;
 	double sample = 0.003;
 
-	    p1.pos << 0, 0, 1.3;
+    p1.pos << 0, 0, 1.3;
 	p1.vel<< 0, 0, 0;
 	p1.acc<< 0, 0, 0;
 	p1.yaw = 0;

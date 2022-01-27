@@ -108,7 +108,7 @@ class PayloadPositionController
 public:
 	PayloadPositionController();
 	~PayloadPositionController();
-	void CalculateControlInput(nav_msgs::Odometry* iris1_control_input, nav_msgs::Odometry* iris2_control_input, nav_msgs::Odometry* error);
+	void CalculateControlInput(nav_msgs::Odometry* iris1_control_input, nav_msgs::Odometry* iris2_control_input, nav_msgs::Odometry* error, Eigen::Vector4d* iris1_control_input_multiarray, Eigen::Vector4d* iris2_control_input_multiarray);
 	void ComputeUstar(Eigen::MatrixXd* u_star, Eigen::Vector4d* desired_control_input);
 	void ComputeQuadStates(Eigen::Vector3d* x1 ,Eigen::Vector3d* x2 ,Eigen::Vector3d* v1,Eigen::Vector3d* v2);
 	void SetOdometry(const EigenOdometry& odometry);

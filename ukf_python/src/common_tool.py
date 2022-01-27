@@ -14,11 +14,18 @@ def eulerAnglesToRotationMatrix(theta) :
                     [-math.sin(theta[1]),   0,      math.cos(theta[1])  ]
                     ])
 
-    R_z = np.array([[math.cos(theta[2]),    -math.sin(theta[2]),    0],
+    R_z1 = np.array([[math.cos(theta[0]),    -math.sin(theta[0]),    0],
+                    [math.sin(theta[0]),    math.cos(theta[0]),     0],
+                    [0,                     0,                      1]
+                    ])
+
+    R_z2 = np.array([[math.cos(theta[2]),    -math.sin(theta[2]),    0],
                     [math.sin(theta[2]),    math.cos(theta[2]),     0],
                     [0,                     0,                      1]
                     ])
 
-    R = np.dot(R_z, np.dot( R_y, R_x ))
+    #ZXY
+
+    R = np.dot(R_x, np.dot( R_y, R_z2 ))
 
     return R

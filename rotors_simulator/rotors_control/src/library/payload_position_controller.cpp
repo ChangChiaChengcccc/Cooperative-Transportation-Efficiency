@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <chrono>
+#include <std_msgs/Float64MultiArray.h>
 
 namespace rotors_control
 {
@@ -17,7 +18,7 @@ PayloadPositionController::PayloadPositionController()
 
 PayloadPositionController::~PayloadPositionController() {}
 
-void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* iris1_control_input, nav_msgs::Odometry* iris2_control_input, nav_msgs::Odometry* error)
+void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* iris1_control_input, nav_msgs::Odometry* iris2_control_input, nav_msgs::Odometry* error, Eigen::Vector4d* iris1_control_input_vec, Eigen::Vector4d* iris2_control_input_vec)
 {
 	
 	// compute b_3_d and the acceleration
@@ -76,6 +77,11 @@ void PayloadPositionController::CalculateControlInput(nav_msgs::Odometry* iris1_
 	iris2_control_input->pose.pose.orientation.y = iris2_thrust_moment(2);
 	iris2_control_input->pose.pose.orientation.z = iris2_thrust_moment(3);
 	iris2_control_input->pose.pose.orientation.w = iris2_thrust_moment(0);
+
+	// publish payload_control_input_vec
+	*iris1_control_input_vec = iris1_thrust_moment;
+	*iris2_control_input_vec = iris2_thrust_moment;
+
 }
 
 

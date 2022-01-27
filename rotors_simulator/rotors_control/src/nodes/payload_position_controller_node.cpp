@@ -32,9 +32,12 @@ PayloadPositionControllerNode::PayloadPositionControllerNode(const
 	                              &PayloadPositionControllerNode::FTsensor2Callback, this);			
 
 	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/system/error", 1);
-
+	// publish by orientation
 	iris1_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris1_control_input", 1);
 	iris2_control_input_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris2_control_input", 1);
+	// publish by Multiarray
+	iris1_control_input_multiarray_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/iris1_control_input_multiarray", 1);
+	iris2_control_input_multiarray_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/iris2_control_input_multiarray", 1);
 
 	System_Error_rqt_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/system/error/rqt", 1);
 
@@ -177,17 +180,25 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	// CalculateRotorVelocities() is called to calculate rotor velocities and put into ref_rotor_velocities
 	nav_msgs::Odometry payload_error;
 	nav_msgs::Odometry iris1_control_input, iris2_control_input;
-	payload_position_controller_.CalculateControlInput(&iris1_control_input, &iris2_control_input, &payload_error);
+	Eigen::Vector4d iris1_control_input_vec, iris2_control_input_vec;
+	payload_position_controller_.CalculateControlInput(&iris1_control_input, &iris2_control_input, &payload_error, &iris1_control_input_vec, &iris2_control_input_vec);
 
 	// Setmsg 
 	Eigen::Vector3d tmp;
 	tmp = payload_position_controller_.System_Error_rqt();
 	Setmsg(tmp);
 
+	// Set_multiarray_msg
+	Set_multiarray_msg1(iris1_control_input_vec);
+	Set_multiarray_msg2(iris2_control_input_vec);
+
 	error_pub_.publish(payload_error);
 	iris1_control_input_pub_.publish(iris1_control_input);
 	iris2_control_input_pub_.publish(iris2_control_input);
 	System_Error_rqt_pub_.publish(msg);
+	iris1_control_input_multiarray_pub_.publish(multiarray_msg1);
+	iris1_control_input_multiarray_pub_.publish(multiarray_msg2);
+
 }
 void PayloadPositionControllerNode::FTsensor1Callback(const geometry_msgs::WrenchStampedConstPtr& ft1_msg)
 {
@@ -199,16 +210,25 @@ void PayloadPositionControllerNode::FTsensor2Callback(const geometry_msgs::Wrenc
 }
 void PayloadPositionControllerNode::Setmsg(Eigen::Vector3d tmp2){
 	std::vector<double> vec1 = {tmp2(0),tmp2(1),tmp2(2)};
-	/*
-	msg.layout.dim[0].size = vec1.size();
-	msg.layout.dim[0].stride = 1;
-	msg.layout.dim[0].label = "x"; // or whatever name you typically use to index vec1
-	*/
-
 	// copy in the data
 	msg.data.clear();
 	msg.data.insert(msg.data.end(), vec1.begin(), vec1.end());
 }
+
+void PayloadPositionControllerNode::Set_multiarray_msg1(Eigen::Vector4d tmp){
+	std::vector<double> vec1 = {tmp(0),tmp(1),tmp(2),tmp(3)};
+	// copy in the data
+	multiarray_msg1.data.clear();
+	multiarray_msg1.data.insert(multiarray_msg1.data.end(), vec1.begin(), vec1.end());
+}
+
+void PayloadPositionControllerNode::Set_multiarray_msg2(Eigen::Vector4d tmp){
+	std::vector<double> vec1 = {tmp(0),tmp(1),tmp(2),tmp(3)};
+	// copy in the data
+	multiarray_msg2.data.clear();
+	multiarray_msg2.data.insert(multiarray_msg2.data.end(), vec1.begin(), vec1.end());
+}
+
 
 }
 

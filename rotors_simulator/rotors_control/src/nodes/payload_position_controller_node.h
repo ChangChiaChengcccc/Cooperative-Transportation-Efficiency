@@ -55,12 +55,15 @@ private:
 	ros::Publisher error_pub_;
 	ros::Publisher iris1_control_input_pub_;
 	ros::Publisher iris2_control_input_pub_;
+	ros::Publisher iris1_control_input_multiarray_pub_;
+	ros::Publisher iris2_control_input_multiarray_pub_;
 	ros::Publisher System_Error_rqt_pub_;
 
 	mav_msgs::EigenTrajectoryPointDeque commands_;
 	std::deque<ros::Duration> command_waiting_times_;
 	ros::Timer command_timer_;
-	std_msgs::Float64MultiArray msg;
+	std_msgs::Float64MultiArray msg; 
+	std_msgs::Float64MultiArray multiarray_msg1, multiarray_msg2;
 
 	void TimedCommandCallback(const ros::TimerEvent& e);
 
@@ -76,6 +79,8 @@ private:
 	void FTsensor2Callback(const geometry_msgs::WrenchStampedConstPtr& ft2_msg);
 
 	void Setmsg(Eigen::Vector3d tmp2);
+	void Set_multiarray_msg1(Eigen::Vector4d tmp);
+	void Set_multiarray_msg2(Eigen::Vector4d tmp);
 };
 }
 
