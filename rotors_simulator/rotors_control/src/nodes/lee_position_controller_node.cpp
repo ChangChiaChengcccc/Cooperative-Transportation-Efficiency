@@ -153,7 +153,7 @@ void LeePositionControllerNode::ControlInputCallback(
 
 	// Todo(ffurrer): Do this in the conversions header.
 	mav_msgs::ActuatorsPtr actuator_msg(new mav_msgs::Actuators);
-	Set_rotor_vel_multiarray(ref_rotor_velocities);
+	Set_rotor_vel_multiarray_1(ref_rotor_velocities);
 	iris1_original_rotor_vel_pub_.publish(iris1_original_rotor_vel);
 
 	actuator_msg->angular_velocities.clear();
@@ -171,7 +171,7 @@ void LeePositionControllerNode::ControlInputCallback(
 	error_pub_.publish(error);
 }
 
-void LeePositionControllerNode::Set_rotor_vel_multiarray(Eigen::Vector4d tmp){
+void LeePositionControllerNode::Set_rotor_vel_multiarray_1(Eigen::Vector4d tmp){
 	std::vector<double> vec1 = {tmp(0),tmp(1),tmp(2),tmp(3)};
 	// copy in the data
 	iris1_original_rotor_vel.data.clear();

@@ -73,8 +73,10 @@ private:
 	ros::Publisher omega_error_pub_;
 	ros::Publisher error_pub_;
 	ros::Publisher iris1_original_rotor_vel_pub_;
+	ros::Publisher iris2_original_rotor_vel_pub_;
 
 	std_msgs::Float64MultiArray iris1_original_rotor_vel;
+	std_msgs::Float64MultiArray iris2_original_rotor_vel;
 
 	mav_msgs::EigenTrajectoryPointDeque commands_;
 	nav_msgs::OdometryConstPtr odometry_msg_;
@@ -93,7 +95,8 @@ private:
 	void OdometryCallback(const nav_msgs::OdometryConstPtr& odometry_msg);
 
 	void ControlInputCallback(const nav_msgs::OdometryConstPtr& control_input_msg);
-	void Set_rotor_vel_multiarray(Eigen::Vector4d tmp);
+	void Set_rotor_vel_multiarray_1(Eigen::Vector4d tmp);
+	void Set_rotor_vel_multiarray_2(Eigen::Vector4d tmp);
 };
 }
 
