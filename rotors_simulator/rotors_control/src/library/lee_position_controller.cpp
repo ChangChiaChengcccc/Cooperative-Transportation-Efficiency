@@ -95,7 +95,7 @@ void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
 	//std::cout << "moment_thrust_output\n" << moment_thrust << "\n\n";
 
 	*rotor_velocities = moment_thrust_to_rotor_velocities_ * moment_thrust;
-	*rotor_velocities = rotor_velocities->cwiseMax(Eigen::VectorXd::Zero(rotor_velocities->rows()));
+	//*rotor_velocities = rotor_velocities->cwiseMax(Eigen::VectorXd::Zero(rotor_velocities->rows())); //revise by chiacheng
 	*rotor_velocities = rotor_velocities->cwiseSqrt();
 
 	//std::cout << "*rotor_velocities\n" << *rotor_velocities << std::endl;

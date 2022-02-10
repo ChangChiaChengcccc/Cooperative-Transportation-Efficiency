@@ -197,7 +197,7 @@ void PayloadPositionControllerNode::OdometryCallback(const nav_msgs::OdometryCon
 	iris2_control_input_pub_.publish(iris2_control_input);
 	System_Error_rqt_pub_.publish(msg);
 	iris1_control_input_multiarray_pub_.publish(multiarray_msg1);
-	iris1_control_input_multiarray_pub_.publish(multiarray_msg2);
+	iris2_control_input_multiarray_pub_.publish(multiarray_msg2);
 
 }
 void PayloadPositionControllerNode::FTsensor1Callback(const geometry_msgs::WrenchStampedConstPtr& ft1_msg)

@@ -24,6 +24,7 @@
 #include "lee_position_controller_node.h"
 
 #include "rotors_control/parameters_ros.h"
+#include <std_msgs/Float64MultiArray.h>
 
 namespace rotors_control
 {
@@ -53,6 +54,8 @@ LeePositionControllerNode::LeePositionControllerNode(const
 	                                        mav_msgs::default_topics::COMMAND_ACTUATORS, 1);
 
 	error_pub_ = nh_.advertise<nav_msgs::Odometry>("/iris1/error", 1);
+
+	iris1_original_rotor_vel_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/iris1_original_rotor_vel", 1);
 
 	command_timer_ = nh_.createTimer(ros::Duration(0), &LeePositionControllerNode::TimedCommandCallback, this,
 	                                 true, false);
@@ -150,15 +153,31 @@ void LeePositionControllerNode::ControlInputCallback(
 
 	// Todo(ffurrer): Do this in the conversions header.
 	mav_msgs::ActuatorsPtr actuator_msg(new mav_msgs::Actuators);
+	Set_rotor_vel_multiarray(ref_rotor_velocities);
+	iris1_original_rotor_vel_pub_.publish(iris1_original_rotor_vel);
 
 	actuator_msg->angular_velocities.clear();
 	for (int i = 0; i < ref_rotor_velocities.size(); i++)
-		actuator_msg->angular_velocities.push_back(ref_rotor_velocities[i]);
+	{
+		if(i==0 || i==2){
+			actuator_msg->angular_velocities.push_back(sqrt(0.8)*ref_rotor_velocities[i]); //efficiency
+		}else{
+			actuator_msg->angular_velocities.push_back(ref_rotor_velocities[i]); //efficiency
+		}
+	}
 	actuator_msg->header.stamp = odometry_msg_->header.stamp;
 
 	motor_velocity_reference_pub_.publish(actuator_msg);
 	error_pub_.publish(error);
 }
+
+void LeePositionControllerNode::Set_rotor_vel_multiarray(Eigen::Vector4d tmp){
+	std::vector<double> vec1 = {tmp(0),tmp(1),tmp(2),tmp(3)};
+	// copy in the data
+	iris1_original_rotor_vel.data.clear();
+	iris1_original_rotor_vel.data.insert(iris1_original_rotor_vel.data.end(), vec1.begin(), vec1.end());
+}
+
 /*
 void LeePositionControllerNode::MultiDofJointTrajectoryCallback(
         const trajectory_msgs::MultiDOFJointTrajectoryConstPtr& msg)

@@ -21,6 +21,8 @@ dt = 0.025
 #state variables
 state_dim = 32
 initial_state = np.zeros(state_dim)
+e_symbol = 1.0
+initial_state[28:32] = np.array([e_symbol, e_symbol, e_symbol, e_symbol])
 rpy_tmp = np.zeros(3)
 d_rpy = np.zeros(3)
 rpy = 0.0,0.0,0.0 #tuple
@@ -290,11 +292,11 @@ def imu_cb(data):
 
 def rotors_cb(data):
     global f_vector,allo_mat,thrust_moment
-    rotor_force_constant = 8.3e-06#8.54858e-06#
-    f_vector = np.array([data.angular_velocities[0]*data.angular_velocities[0]*rotor_force_constant,
-                         data.angular_velocities[1]*data.angular_velocities[1]*rotor_force_constant,
-                         data.angular_velocities[2]*data.angular_velocities[2]*rotor_force_constant, 
-                         data.angular_velocities[3]*data.angular_velocities[3]*rotor_force_constant])
+    rotor_force_constant = 8.54858e-06#8.3e-06#
+    f_vector = np.array([data.data[0]*data.data[0]*rotor_force_constant,
+                         data.data[1]*data.data[1]*rotor_force_constant,
+                         data.data[2]*data.data[2]*rotor_force_constant, 
+                         data.data[3]*data.data[3]*rotor_force_constant])
     sensor_data[18:22] = f_vector
     debug_tmp[10:14] = f_vector
     
@@ -327,7 +329,7 @@ if __name__ == "__main__":
         rospy.Subscriber("/payload_joint1_ft_sensor", WrenchStamped, ft_cb, queue_size=10)
         rospy.Subscriber("/iris1/ground_truth/imu", Imu, imu_cb, queue_size=10)
         rospy.Subscriber("/estimated_state", Float64MultiArray, debug_cb, queue_size=10)
-        rospy.Subscriber("/iris1/motor_speed", Actuators, rotors_cb, queue_size=10)
+        rospy.Subscriber("/iris1_original_rotor_vel", Float64MultiArray, rotors_cb, queue_size=10)
         #add_sensor_noise(sensor_data)
 
         # pass all the parameters into the UKF!

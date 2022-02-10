@@ -36,6 +36,7 @@
 
 #include "rotors_control/common.h"
 #include "rotors_control/lee_position_controller.h"
+#include <std_msgs/Float64MultiArray.h>
 
 namespace rotors_control
 {
@@ -71,6 +72,9 @@ private:
 	ros::Publisher attitude_error_pub_;
 	ros::Publisher omega_error_pub_;
 	ros::Publisher error_pub_;
+	ros::Publisher iris1_original_rotor_vel_pub_;
+
+	std_msgs::Float64MultiArray iris1_original_rotor_vel;
 
 	mav_msgs::EigenTrajectoryPointDeque commands_;
 	nav_msgs::OdometryConstPtr odometry_msg_;
@@ -89,6 +93,7 @@ private:
 	void OdometryCallback(const nav_msgs::OdometryConstPtr& odometry_msg);
 
 	void ControlInputCallback(const nav_msgs::OdometryConstPtr& control_input_msg);
+	void Set_rotor_vel_multiarray(Eigen::Vector4d tmp);
 };
 }
 
